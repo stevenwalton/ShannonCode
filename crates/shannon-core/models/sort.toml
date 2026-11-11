@@ -1,0 +1,37 @@
+# sort — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "sort"
+effect = "read"
+trust = "generated"
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "read_file" }]
+flag = [
+  { names = ["-o", "--output"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["-T", "--temporary-directory"], arity = 1, role = "dir", effect = "write" },
+  { names = ["--compress-program"], arity = 1, role = "program", effect = "exec" },
+  { names = ["-r", "--reverse"] },
+  { names = ["-n", "--numeric-sort"] },
+  { names = ["-g", "--general-numeric-sort"] },
+  { names = ["-h", "--human-numeric-sort"] },
+  { names = ["-V", "--version-sort"] },
+  { names = ["-M", "--month-sort"] },
+  { names = ["-R", "--random-sort"] },
+  { names = ["-u", "--unique"] },
+  { names = ["-f", "--ignore-case"] },
+  { names = ["-b", "--ignore-leading-blanks"] },
+  { names = ["-d", "--dictionary-order"] },
+  { names = ["-i", "--ignore-nonprinting"] },
+  { names = ["-s", "--stable"] },
+  { names = ["-c", "--check"] },
+  { names = ["-C"], canon = "check-quiet" },
+  { names = ["-m", "--merge"] },
+  { names = ["-z", "--zero-terminated"] },
+  { names = ["-k", "--key"], arity = 1 },
+  { names = ["-t", "--field-separator"], arity = 1 },
+  { names = ["-S", "--buffer-size"], arity = 1 },
+  { names = ["--parallel"], arity = 1 },
+  { names = ["--batch-size"], arity = 1 },
+  { names = ["--sort"], arity = 1 },
+  { names = ["--random-source"], arity = 1, role = "read_file" },
+]

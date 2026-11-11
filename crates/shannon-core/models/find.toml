@@ -1,0 +1,129 @@
+# find — a read of the trees it is given, until a primary runs a program
+# (`-exec` and kin), deletes (`-delete`), or writes a file (`-fprint*`,
+# `-fls`). Single-dash WORDS that never bundle; `--` ends only the options
+# before the paths, so a primary after it is still read (`find -- . -delete`
+# deletes). `(`, `)`, `!`, `,` are expression operators, not operands; `{}`
+# stands for the matched path, which is under the starting points.
+#
+# Canonical names are the registry's (`shell::program`, 2026-10): the
+# shipped carvings (`ask find -exec`) and users' rules name them. Verified
+# against BSD find (this machine) and GNU findutils' manual; bfs adds `-rm`
+# as a spelling of `-delete`. `-files0-from` takes its starting points from
+# a file no rule can read, so it is guarded: it asks until a rule names it
+# (review 28: `printf '/etc\0' | find -files0-from - -name x` ran unasked
+# when it was modelled as a plain read).
+
+name = "find"
+effect = "read"
+trust = "verified"
+# Its starting points are LISTED — names reach the output, not contents —
+# while the call stays a read (`list`, 10-11); a primary that runs, deletes
+# or writes acts on what is below, and the places reach it as ever.
+reads_here = "list"
+operators = ["(", ")", "!", ","]
+placeholder = "{}"
+family = { bundling = false, single_dash_long = true, interspersed = true, double_dash = "ignored" }
+examples.match = [
+  "find . -name '*.md'",
+  "find src -type f -newer Cargo.toml -print",
+  "find . -name '*.pyc' -delete",
+  "find . -type f -exec cat {} \\;",
+  "find . -name '*.pem' -o -name x",
+]
+examples.not_match = ["find . -frobnicate x"]
+
+positional = [{ at = "rest", role = "list" }]
+
+flag = [
+  # Tests with a pattern or a name.
+  { names = ["-name"], arity = 1, role = "pattern" },
+  { names = ["-iname"], arity = 1, role = "pattern" },
+  { names = ["-path"], arity = 1, role = "pattern" },
+  { names = ["-ipath"], arity = 1, role = "pattern" },
+  { names = ["-wholename"], arity = 1, role = "pattern" },
+  { names = ["-iwholename"], arity = 1, role = "pattern" },
+  { names = ["-regex"], arity = 1, role = "pattern" },
+  { names = ["-iregex"], arity = 1, role = "pattern" },
+  { names = ["-lname"], arity = 1, role = "pattern" },
+  { names = ["-ilname"], arity = 1, role = "pattern" },
+  { names = ["-user"], arity = 1, role = "data" },
+  { names = ["-group"], arity = 1, role = "data" },
+  { names = ["-perm"], arity = 1, role = "data" },
+  { names = ["-fstype"], arity = 1, role = "data" },
+  { names = ["-flags"], arity = 1, role = "data" },
+  { names = ["-xattrname"], arity = 1, role = "data" },
+  { names = ["-context"], arity = 1, role = "data" },
+  { names = ["-type"], arity = 1, role = "enum" },
+  { names = ["-xtype"], arity = 1, role = "enum" },
+  { names = ["-regextype"], arity = 1, role = "enum" },
+  # Tests with a number.
+  { names = ["-size"], arity = 1, role = "number" },
+  { names = ["-maxdepth"], arity = 1, role = "number" },
+  { names = ["-mindepth"], arity = 1, role = "number" },
+  { names = ["-mmin"], arity = 1, role = "number" },
+  { names = ["-mtime"], arity = 1, role = "number" },
+  { names = ["-amin"], arity = 1, role = "number" },
+  { names = ["-atime"], arity = 1, role = "number" },
+  { names = ["-cmin"], arity = 1, role = "number" },
+  { names = ["-ctime"], arity = 1, role = "number" },
+  { names = ["-Bmin"], canon = "bmin", arity = 1, role = "number" },
+  { names = ["-Btime"], canon = "btime", arity = 1, role = "number" },
+  { names = ["-used"], arity = 1, role = "number" },
+  { names = ["-links"], arity = 1, role = "number" },
+  { names = ["-inum"], arity = 1, role = "number" },
+  { names = ["-uid"], arity = 1, role = "number" },
+  { names = ["-gid"], arity = 1, role = "number" },
+  # Tests against another file: stat it, wherever it is.
+  { names = ["-newer"], arity = 1, role = "read_file" },
+  { names = ["-anewer"], arity = 1, role = "read_file" },
+  { names = ["-cnewer"], arity = 1, role = "read_file" },
+  { names = ["-mnewer"], arity = 1, role = "read_file" },
+  { names = ["-Bnewer"], canon = "bnewer", arity = 1, role = "read_file" },
+  { names = ["-samefile"], arity = 1, role = "read_file" },
+  # `-newerXY REF`: REF a file, but for Y = t, a time.
+  { names = ["-neweraa", "-neweraB", "-newerac", "-neweram", "-newerBa", "-newerBB", "-newerBc", "-newerBm", "-newerca", "-newercB", "-newercc", "-newercm", "-newerma", "-newermB", "-newermc", "-newermm"], canon = "newer-file", arity = 1, role = "read_file" },
+  { names = ["-newerat", "-newerBt", "-newerct"], canon = "newer-time", arity = 1, role = "data" },
+  { names = ["-newermt"], arity = 1, role = "data" },
+  { names = ["-f"], canon = "start-path", arity = 1, role = "list" },
+  { names = ["-files0-from"], arity = 1, role = "read_file", benign = false, why = "its starting points come from a file or a stream no rule can read" },
+  # Options before the paths (BSD): follow links, extended regexes, refuse a
+  # name xargs cannot take, stay on a device, sort, depth first.
+  { names = ["-H"], canon = "follow-args" },
+  { names = ["-L"], canon = "follow-links" },
+  { names = ["-P"], canon = "no-follow" },
+  { names = ["-E"], canon = "extended-regex" },
+  { names = ["-X"], canon = "xargs-safe" },
+  { names = ["-x"], canon = "one-device" },
+  { names = ["-s"], canon = "sorted" },
+  { names = ["-d"], canon = "depth-first" },
+  { names = ["-D"], canon = "debug", arity = 1, role = "data" },
+  { names = ["-O0", "-O1", "-O2", "-O3"], canon = "optimize" },
+  # The expression's operators and the actions that only read or print.
+  { names = ["-o", "-or"], canon = "or" },
+  { names = ["-a", "-and"], canon = "and" },
+  { names = ["-not"] }, { names = ["-true"] }, { names = ["-false"] }, { names = ["-quit"] },
+  { names = ["-depth"] }, { names = ["-prune"] }, { names = ["-print"] }, { names = ["-print0"] }, { names = ["-ls"] },
+  { names = ["-printf"], arity = 1, role = "data" },
+  { names = ["-empty"] }, { names = ["-xdev"] }, { names = ["-mount"] }, { names = ["-noleaf"] },
+  { names = ["-daystart"] }, { names = ["-follow"] }, { names = ["-nouser"] }, { names = ["-nogroup"] },
+  { names = ["-readable"] }, { names = ["-writable"] }, { names = ["-executable"] },
+  { names = ["-ignore_readdir_race"], canon = "ignore-readdir-race" },
+  { names = ["-noignore_readdir_race"], canon = "noignore-readdir-race" },
+  { names = ["-warn"] }, { names = ["-nowarn"] }, { names = ["-acl"] }, { names = ["-xattr"] },
+  { names = ["-help", "--help"], canon = "help" },
+  { names = ["-version", "--version"], canon = "version" },
+  # Actions that run a program on what matched — `find -exec rm {} \;` is
+  # also an `rm`, read as its own act.
+  { names = ["-exec"], arity = { until = [";", "+"] }, role = "program", effect = "exec" },
+  { names = ["-execdir"], arity = { until = [";", "+"] }, role = "program", effect = "exec" },
+  { names = ["-ok"], arity = { until = [";", "+"] }, role = "program", effect = "exec" },
+  { names = ["-okdir"], arity = { until = [";", "+"] }, role = "program", effect = "exec" },
+  # The action that deletes what matched.
+  { names = ["-delete", "-rm"], canon = "delete", effect = "delete" },
+  # Actions that write a file (the registry called an overwrite
+  # destructive; here it is a write, placed by the path it names).
+  { names = ["-fprint"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["-fprint0"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["-fls"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["-fprintf"], arity = ["write_file", "data"], role = "write_file", effect = "write" },
+]

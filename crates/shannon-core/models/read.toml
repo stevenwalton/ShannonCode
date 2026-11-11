@@ -1,0 +1,20 @@
+# read — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "read"
+effect = "read"
+trust = "generated"
+family = { bundling = true }
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-r"], canon = "raw" },
+  { names = ["-s"], canon = "silent" },
+  { names = ["-e"], canon = "readline" },
+  { names = ["-p"], canon = "prompt", arity = 1 },
+  { names = ["-a"], canon = "array", arity = 1 },
+  { names = ["-d"], canon = "delim", arity = 1 },
+  { names = ["-i"], canon = "initial", arity = 1 },
+  { names = ["-n", "-N"], canon = "nchars", arity = 1 },
+  { names = ["-t"], canon = "timeout", arity = 1 },
+  { names = ["-u"], canon = "fd", arity = 1 },
+]

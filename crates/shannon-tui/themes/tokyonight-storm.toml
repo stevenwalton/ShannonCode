@@ -1,0 +1,36 @@
+# Tokyo Night (Storm) — github.com/folke/tokyonight.nvim (Apache-2.0); see
+# NOTICE.md. The palette's sixteen terminal colours and its ground: every
+# role the shipped `terminal` theme paints is drawn in them.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#24283b"
+text = "#c0caf5"
+comment = "#565f89"
+surface = "#2e3c64"
+black = "#1d202f"
+red = "#f7768e"
+green = "#9ece6a"
+yellow = "#e0af68"
+blue = "#7aa2f7"
+magenta = "#bb9af7"
+cyan = "#7dcfff"
+white = "#a9b1d6"
+bright-black = "#414868"
+bright-red = "#ff899d"
+bright-green = "#9fe044"
+bright-yellow = "#faba4a"
+bright-blue = "#8db0ff"
+bright-magenta = "#c7a9ff"
+bright-cyan = "#a4daff"
+bright-white = "#c0caf5"

@@ -1,0 +1,12 @@
+# shred — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09), then verified by hand: its operands are the files
+# it overwrites and (with `-u`) removes — deleted either way, as far as
+# their contents go.
+
+name = "shred"
+effect = "delete"
+trust = "generated"
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "delete_file" }]
+flag = [
+]

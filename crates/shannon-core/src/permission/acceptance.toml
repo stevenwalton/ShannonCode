@@ -1,0 +1,1800 @@
+# The permission ACCEPTANCE SUITE — what the rules must decide, by Steven's
+# goals (2026-10-08), as cases the engine is measured against.
+#
+# Each case: the INTENT in prose, the policy as TODAY's grammar spells it
+# (`rules`; left out where today's grammar cannot say it), the command line,
+# and the verdict the GOALS call for. `gap` records where today's engine does
+# not decide that, and why, with `today` saying what it decides instead
+# (`allow` `ask` `deny`, or `unspellable` where the rules cannot be said); the
+# harness (`acceptance.rs`) fails when a gap closes unnoticed, moves, or a new
+# one opens. `needs` names what the verdict assumes exists (a program model, a
+# web category) beyond the grammar.
+#
+# An `allow` case's allows (a `deny` case's denies) must be what decide it:
+# without them the engine decides otherwise, or the case says
+# `rules_matter = false` and why (its point is that other rules do not reach
+# it). 12 allow cases held with no rule at all (review stop 12, T8 H3).
+#
+# Verdicts: `allow`, `ask`, `deny`, or `not-allow` where either refusal meets
+# the intent. Every case starts in `defaults.start` with the shipped rules
+# unless it says `base = "empty"`.
+#
+# Examples are benign on purpose (`rm build/x`, `gh pr close 12`): the point
+# is the shape, not the damage.
+#
+# Goals: G1 fewer false prompts, no more false allows · G2 global + project
+# rules · G3 users model programs, shipped models in the same format · G4
+# allow/ask/deny on a program, subcommand, flag, flag value · G5 programs,
+# paths, web under one grammar · G6 paths recursive, most specific wins · G7
+# allowed program never acts on a denied path · G8 rules compound · G9 one
+# grammar, or simple + advanced tiers.
+
+[defaults]
+start = "/home/me/proj"
+base = "defaults"
+
+# ---------------------------------------------------------------------------
+# A. The named examples (G4)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "find-without-delete-runs"
+goals = ["G4"]
+intent = "deny any find that has -delete: a find without it is the read it always was"
+rules = ["deny find:-delete"]
+command = "find . -name '*.md'"
+expect = "allow"
+
+[[case]]
+id = "find-delete-denied"
+goals = ["G4"]
+intent = "deny any find that has -delete"
+rules = ["deny find:-delete"]
+command = "find . -name '*.md' -delete"
+expect = "deny"
+
+[[case]]
+id = "find-delete-denied-whatever-the-order"
+goals = ["G4"]
+intent = "the flag's position does not matter"
+rules = ["deny find:-delete"]
+command = "find . -delete -name '*.md'"
+expect = "deny"
+
+[[case]]
+id = "find-delete-denied-under-a-blanket-allow"
+goals = ["G4", "G8"]
+intent = "a deny on a flag outranks an allow of the program"
+rules = ["allow find *", "deny find:-delete"]
+command = "find . -name '*.md' -delete"
+expect = "deny"
+
+[[case]]
+id = "ls-blanket"
+goals = ["G4"]
+intent = "allow any ls — a flag ls's model does not know as well"
+rules = ["allow ls *"]
+command = "ls --hyperlink=always src"
+expect = "allow"
+
+[[case]]
+id = "ls-blanket-outside-the-approved-places"
+goals = ["G4", "G5", "G7"]
+intent = "allow any ls — but a path is its own category: outside the approved places it still asks"
+rules = ["allow ls *"]
+command = "ls -la /etc"
+expect = "ask"
+
+[[case]]
+id = "gh-pr-view-allowed"
+goals = ["G4", "G8"]
+intent = "under an ask of every gh, allow any gh pr view: the subcommand outranks the program"
+rules = ["ask gh *", "allow gh pr view *"]
+command = "gh pr view 123"
+expect = "allow"
+
+[[case]]
+id = "gh-pr-view-allowed-with-any-flag"
+goals = ["G4"]
+intent = "a blanket-allowed subcommand takes any flag (Steven, Q2)"
+rules = ["ask gh *", "allow gh pr view *"]
+command = "gh pr view 123 --comments --json title"
+expect = "allow"
+
+[[case]]
+id = "gh-pr-view-is-not-gh-pr-close"
+goals = ["G4"]
+intent = "the words name a SUBCOMMAND, in position — not a set of words anywhere"
+rules = ["ask gh *", "allow gh pr view *"]
+command = "gh pr close 12 --comment view"
+expect = "ask"
+
+[[case]]
+id = "gh-pr-view-is-not-gh-view-pr"
+goals = ["G4"]
+intent = "order is structure"
+rules = ["ask gh *", "allow gh pr view *"]
+command = "gh view pr 12"
+expect = "ask"
+
+[[case]]
+id = "gh-pr-create-denied"
+goals = ["G4"]
+intent = "deny any gh pr create"
+rules = ["ask gh *", "allow gh pr view *", "deny gh pr create"]
+command = "gh pr create --title x --body y"
+expect = "deny"
+
+[[case]]
+id = "gh-pr-view-of-a-branch-named-create"
+goals = ["G4"]
+intent = "a deny names a subcommand, not a word: viewing the PR of branch `create` is a view"
+rules = ["ask gh *", "allow gh pr view *", "deny gh pr create"]
+command = "gh pr view create"
+expect = "allow"
+
+[[case]]
+id = "gh-api-get-allowed"
+goals = ["G4", "G8"]
+intent = "under an ask of every gh api, allow gh api --method GET: the specific form outranks the blanket"
+rules = ["ask gh api *", "allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api --method GET repos/o/r/pulls"
+expect = "allow"
+
+[[case]]
+id = "gh-api-get-allowed-equals-spelling"
+goals = ["G4"]
+intent = "`--method=GET` and `--method GET` are one spelling"
+rules = ["ask gh api *", "allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api --method=GET repos/o/r/pulls"
+expect = "allow"
+
+[[case]]
+id = "gh-api-get-short-spelling"
+goals = ["G3", "G4"]
+intent = "`-X GET` is `--method GET` — once gh's model says so"
+needs = ["model:gh"]
+rules = ["ask gh api *", "allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api -X GET repos/o/r/pulls"
+expect = "allow"
+
+[[case]]
+id = "gh-api-post-denied"
+goals = ["G4"]
+intent = "deny gh api --method POST"
+rules = ["ask gh api *", "allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api --method POST repos/o/r/issues"
+expect = "deny"
+
+[[case]]
+id = "gh-api-post-denied-short-spelling"
+goals = ["G3", "G4"]
+intent = "a deny must hold under every spelling the model knows"
+needs = ["model:gh"]
+rules = ["ask gh api *", "allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api -X POST repos/o/r/issues"
+expect = "deny"
+
+[[case]]
+id = "gh-api-implicit-post-denied"
+goals = ["G3", "G4"]
+intent = "gh api with a field (-f) sends POST with no --method written; the model must know (to verify against gh's docs)"
+needs = ["model:gh"]
+rules = ["ask gh api *", "allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api repos/o/r/issues -f title=x"
+expect = "deny"
+
+[[case]]
+id = "gh-api-header-asks-even-with-get"
+goals = ["G4", "G8"]
+intent = "ask on every gh api -H: an ask outranks the allow it sits beside"
+rules = ["ask gh api *", "allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api --method GET -H 'Accept: application/json' repos/o/r"
+expect = "ask"
+
+[[case]]
+id = "gh-api-no-method-is-a-specific-form-not-written"
+goals = ["G4", "G3"]
+intent = "a plain `gh api X` is a GET, which gh's model knows: a read, allowed by the model's default (Steven, 10-09, Q1: model-centric)"
+needs = ["model:gh"]
+rules = ["allow gh api --method=GET *", "deny gh api --method=POST", "ask gh api -H"]
+command = "gh api repos/o/r/pulls"
+expect = "allow"
+# The model's default allows it, the allow beside it naming a form not written;
+# with the group's `ask gh api *` it would ask, as a rule of yours should.
+rules_matter = false
+
+# ---------------------------------------------------------------------------
+# B. Compounding (G8): under an ask of every find, allow -name, allow -iname,
+#    deny -delete — so the allows are what let a find run (T8 H3: without the
+#    ask, a find is a read and the allows decided nothing)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "compound-two-allowed-flags"
+goals = ["G8"]
+intent = "allow find -name and allow find -iname together cover a find with both"
+rules = ["ask find *", "allow find:-name", "allow find:-iname", "deny find:-delete"]
+command = "find . -name '*.md' -iname foobar.c"
+expect = "allow"
+
+[[case]]
+id = "compound-denied-flag-added"
+goals = ["G8"]
+intent = "add -delete and the deny wins"
+rules = ["ask find *", "allow find:-name", "allow find:-iname", "deny find:-delete"]
+command = "find . -name '*.md' -iname foobar.c -delete"
+expect = "deny"
+
+[[case]]
+id = "compound-unmentioned-flag-rides-on-the-model"
+goals = ["G8", "G3"]
+intent = "a flag no rule names, which find's model marks benign (-L), rides on the allows because the call only reads (Steven, 10-09, Q1: model-centric for a modelled program; narrowed 10-10 to calls that only read — see specific-form-unnamed-flag-asks-past-a-read; an unmodelled program's unknown flag asks — see specific-form-unknown-flag-asks)"
+rules = ["ask find *", "allow find:-name", "allow find:-iname", "deny find:-delete"]
+command = "find . -name '*.md' -L"
+expect = "allow"
+by = "rule"
+
+[[case]]
+id = "compound-shipped-carving-still-asks"
+goals = ["G8"]
+intent = "a shipped ask (find -exec) is not answered by allows of other flags"
+rules = ["ask find *", "allow find:-name", "allow find:-iname", "deny find:-delete"]
+command = "find . -name '*.md' -exec cat {} \\;"
+expect = "ask"
+
+[[case]]
+id = "compound-flagless-find-is-a-read"
+goals = ["G8"]
+intent = "a find naming no flag is the read it is, inside the project: allows of other forms do not make it ask"
+rules = ["allow find:-name", "allow find:-iname", "deny find:-delete"]
+command = "find src"
+expect = "allow"
+# Without the section's `ask find *`: its point is that the allows beside it
+# do not reach it, so the model's default decides.
+rules_matter = false
+
+# ---------------------------------------------------------------------------
+# C. Paths (G5, G6, G7, Q5): recursive, most specific wins, with an operation
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "path-deny-is-recursive"
+goals = ["G6"]
+intent = "denying /etc/ denies /etc/foo/bar/baz"
+rules = ["deny * /etc/**"]
+command = "cat /etc/foo/bar/baz"
+expect = "deny"
+
+[[case]]
+id = "path-deny-named-as-a-directory"
+goals = ["G6"]
+intent = "a directory names what is below it: `/etc` written without `**` still holds"
+rules = ["deny * /etc"]
+command = "cat /etc/hosts"
+expect = "deny"
+
+[[case]]
+id = "path-specific-allow-under-broad-deny"
+goals = ["G6"]
+intent = "deny /mnt/ but allow /mnt/foo/: /mnt/foo is usable"
+rules = ["deny * /mnt/**", "allow * /mnt/foo/**"]
+command = "cat /mnt/foo/a.txt"
+expect = "allow"
+
+[[case]]
+id = "path-specific-allow-leaves-the-rest-denied"
+goals = ["G6"]
+intent = "deny /mnt/ but allow /mnt/foo/: /mnt/bar stays denied"
+rules = ["deny * /mnt/**", "allow * /mnt/foo/**"]
+command = "cat /mnt/bar/a.txt"
+expect = "deny"
+
+[[case]]
+id = "path-a-deeper-deny-wins-again"
+goals = ["G6"]
+intent = "deny /mnt, allow /mnt/foo, deny /mnt/foo/secret: the deepest rule decides"
+rules = ["deny * /mnt/**", "allow * /mnt/foo/**", "deny * /mnt/foo/secret/**"]
+command = "cat /mnt/foo/secret/a.txt"
+expect = "deny"
+
+[[case]]
+id = "path-denied-beats-allowed-program"
+goals = ["G7"]
+intent = "a program with allowed arguments cannot act on a denied path"
+rules = ["allow rm *", "deny * ~/important/**"]
+command = "rm ~/important/notes.txt"
+expect = "deny"
+
+[[case]]
+id = "path-denied-beats-allowed-program-find"
+goals = ["G7"]
+intent = "the same with a read: find may be allowed, the place is not"
+rules = ["allow find *", "deny * ~/private/**"]
+command = "find ~/private -name '*.md'"
+expect = "deny"
+
+[[case]]
+id = "path-allowed-program-inside-the-project"
+goals = ["G7"]
+intent = "inside the project, an allowed rm still asks: a delete needs a place granted (`allow :delete build`, or `allow rm build/*`) — a program allow grants no place (Steven, 10-09, Q7)"
+rules = ["allow rm *", "deny * ~/important/**"]
+command = "rm build/out.o"
+expect = "ask"
+
+[[case]]
+id = "path-read-grant-covers-a-read"
+goals = ["Q5"]
+intent = "a read grant on a place covers a read there"
+rules = ["allow :read /srv/data/**"]
+command = "cat /srv/data/a.csv"
+expect = "allow"
+
+[[case]]
+id = "path-read-grant-does-not-cover-a-write"
+goals = ["Q5"]
+intent = "a read grant does not cover a write to the same place"
+rules = ["allow :read /srv/data/**"]
+command = "cat notes.txt > /srv/data/a.csv"
+expect = "ask"
+
+[[case]]
+id = "path-read-grant-does-not-cover-a-delete"
+goals = ["Q5"]
+intent = "nor a delete"
+rules = ["allow :read /srv/data/**"]
+command = "rm /srv/data/a.csv"
+expect = "ask"
+
+[[case]]
+id = "path-write-grant-covers-a-redirect"
+goals = ["Q5"]
+intent = "a write grant covers a redirect into the place — outside the project, where a write asks without it (inside, one runs anyway: T8 H3)"
+rules = ["allow :write /srv/out/**"]
+command = "echo hi > /srv/out/log"
+expect = "allow"
+
+[[case]]
+id = "path-write-grant-covers-mkdir"
+goals = ["Q5", "G3"]
+intent = "a write grant covers a writer — once the writer is modelled"
+needs = ["model:mkdir"]
+rules = ["allow :write build/**"]
+command = "mkdir build/x"
+expect = "allow"
+
+[[case]]
+id = "path-write-grant-does-not-approve-a-flag"
+goals = ["Q5", "G4"]
+intent = "the path rule grants the place; only a program rule approves a writer's flags (Steven, 10-10) — else adding `allow mkdir` would make `mkdir -p` stricter than no rule"
+needs = ["model:mkdir"]
+rules = ["allow :write build/**"]
+command = "mkdir -p build/x"
+expect = "ask"
+
+[[case]]
+id = "path-write-grant-with-the-flag-approved"
+goals = ["Q5", "G4"]
+intent = "the flag approved by a program rule, the place by the path rule"
+needs = ["model:mkdir"]
+rules = ["allow mkdir -p", "allow :write build/**"]
+command = "mkdir -p build/x"
+expect = "allow"
+
+[[case]]
+id = "path-grant-follows-a-cd"
+goals = ["G6"]
+intent = "a grant holds where the line's cd put the command"
+rules = ["allow :read ~/notes/**"]
+command = "cd ~/notes && cat a.md"
+expect = "allow"
+
+[[case]]
+id = "path-grant-does-not-cover-a-climb"
+goals = ["G6"]
+intent = "a `..` out of the granted place is not in it"
+rules = ["allow :read ~/notes/**"]
+command = "cat ~/notes/../private/a.md"
+expect = "ask"
+
+[[case]]
+id = "path-default-read-inside-project"
+goals = ["G1"]
+intent = "with no rule at all, a read inside the project runs"
+rules = []
+command = "cat src/main.rs"
+expect = "allow"
+
+[[case]]
+id = "path-default-read-outside-asks"
+goals = ["G1"]
+intent = "with no rule, a read outside the project asks (Steven, 10-05)"
+rules = []
+command = "cat /etc/hosts"
+expect = "ask"
+
+[[case]]
+id = "path-default-read-of-a-sibling-asks"
+goals = ["G1"]
+intent = "a sibling directory is outside"
+rules = []
+command = "cat ../other-project/README.md"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# D. Blanket allow vs specific forms (Steven, Q2)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "blanket-program-takes-any-flag"
+goals = ["G4"]
+intent = "a blanket-allowed program takes any flag"
+rules = ["allow cargo *"]
+command = "cargo build --release --target-dir build/alt"
+expect = "allow"
+
+[[case]]
+id = "blanket-program-does-not-grant-a-place"
+goals = ["G4", "G7"]
+intent = "a blanket program allow decides the program, not where it may act: a flag naming a place outside the project asks"
+rules = ["allow cargo *"]
+command = "cargo build --release --target-dir /srv/out"
+expect = "ask"
+
+[[case]]
+id = "blanket-program-any-subcommand"
+goals = ["G4"]
+intent = "a blanket allow covers every subcommand"
+rules = ["allow cargo *"]
+command = "cargo test -- --nocapture"
+expect = "allow"
+
+[[case]]
+id = "specific-form-exact"
+goals = ["G4"]
+intent = "allow cargo test, nothing more: the exact form runs"
+rules = ["allow cargo test"]
+command = "cargo test"
+expect = "allow"
+
+[[case]]
+id = "specific-form-unknown-flag-asks"
+goals = ["G4"]
+intent = "a flag neither the form nor the model knows asks (Q2: where only forms are allowed, an unknown flag asks)"
+rules = ["allow cargo test"]
+command = "cargo test --frobnicate"
+expect = "ask"
+
+[[case]]
+id = "specific-form-unnamed-flag-asks-past-a-read"
+goals = ["G4", "G3"]
+intent = "past a read, a rule says which flags it approved: a flag the form does not name asks, harmless or not (Steven, 10-10: `allow rm` is not `rm -rf`; on a call that only reads it still rides — compound-unmentioned-flag-rides-on-the-model)"
+rules = ["allow cargo test"]
+command = "cargo test --workspace"
+expect = "ask"
+
+[[case]]
+id = "specific-form-named-flag-allows-past-a-read"
+goals = ["G4"]
+intent = "the same call, the flag named: the form approves it"
+rules = ["allow cargo test --workspace"]
+command = "cargo test --workspace"
+expect = "allow"
+
+[[case]]
+id = "specific-form-writer-takes-only-the-flags-it-names"
+goals = ["G4", "G8"]
+intent = "`allow rm` approves `rm x`, not `rm -rf x`; `allow rm *` approves any flag, the place still judged by path rules (Steven, 10-10)"
+rules = ["allow rm", "allow :delete build"]
+command = "rm -rf build/x"
+expect = "ask"
+
+[[case]]
+id = "specific-form-writer-blanket-takes-any-flag"
+goals = ["G4"]
+intent = "the blanket: any flag, the place judged by its path rule"
+rules = ["allow rm *", "allow :delete build"]
+command = "rm -rf build/x"
+expect = "allow"
+
+[[case]]
+id = "specific-form-writer-without-flags-allows"
+goals = ["G4"]
+intent = "the premise of the two above: the form with no flags covers the call with none"
+rules = ["allow rm", "allow :delete build"]
+command = "rm build/x"
+expect = "allow"
+
+[[case]]
+id = "specific-form-other-subcommand-asks"
+goals = ["G4"]
+intent = "another subcommand asks"
+rules = ["allow cargo test"]
+command = "cargo build"
+expect = "ask"
+
+[[case]]
+id = "subcommand-with-star-takes-any-flag"
+goals = ["G4"]
+intent = "allow cargo test * — the subcommand with any arguments"
+rules = ["allow cargo test *"]
+command = "cargo test --workspace -- --nocapture"
+expect = "allow"
+
+[[case]]
+id = "subcommand-with-star-is-positional"
+goals = ["G4"]
+intent = "`cargo build test` is a build (of the `test` target), not a test"
+rules = ["allow cargo test *"]
+command = "cargo build test"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# E. Prefix structure: a subcommand's form against its program's (probed
+#    10-07, when these programs were unmodelled; git and uv are modelled
+#    since — the forms hold either way)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "prefix-git-status-allowed"
+goals = ["G4"]
+intent = "under an ask of every git, allow git status: the subcommand's prefix outranks the program's"
+rules = ["ask git *", "allow git status *"]
+command = "git status --short"
+expect = "allow"
+
+[[case]]
+id = "prefix-git-status-does-not-allow-push"
+goals = ["G4"]
+intent = "a push naming a branch called `status` is a push"
+rules = ["allow git status *"]
+command = "git push --force origin status"
+expect = "ask"
+
+[[case]]
+id = "prefix-git-in-another-repository-asks"
+goals = ["G4", "G7"]
+intent = "`-C` before the subcommand points git at another place, which is outside"
+rules = ["allow git status *"]
+command = "git -C ../other-project status"
+expect = "ask"
+
+[[case]]
+id = "prefix-uv-run-pytest-allowed"
+goals = ["G4"]
+intent = "allow uv run pytest with any arguments"
+rules = ["allow uv run pytest *"]
+command = "uv run pytest -x tests/test_a.py"
+expect = "allow"
+
+[[case]]
+id = "prefix-uv-run-with-an-option-between-asks"
+goals = ["G4"]
+intent = "`--with` between `run` and `pytest` changes what runs: not the form that was allowed"
+rules = ["allow uv run pytest *"]
+command = "uv run --with requests pytest tests/test_a.py"
+expect = "ask"
+
+[[case]]
+id = "prefix-uv-run-python-is-not-pytest"
+goals = ["G4"]
+intent = "`uv run python -c … pytest` runs python; the word `pytest` later is an argument"
+rules = ["allow uv run pytest *"]
+command = "uv run python -c 'print(1)' pytest"
+expect = "ask"
+
+[[case]]
+id = "prefix-uv-words-out-of-order"
+goals = ["G4"]
+intent = "the same words in another order are another command"
+rules = ["allow uv run pytest *"]
+command = "uv pytest run tests/test_a.py"
+expect = "ask"
+
+[[case]]
+id = "prefix-uv-run-another-program-is-not-pytest"
+goals = ["G4"]
+intent = "`uv run ls pytest` runs ls — a read that allows on its own — under uv's sync; the rule named pytest, there (Steven, 10-27: order matters)"
+rules = ["allow uv run pytest *"]
+command = "uv run ls pytest"
+expect = "ask"
+
+[[case]]
+id = "prefix-uv-run-another-subcommand-is-not-the-one-named"
+goals = ["G4"]
+intent = "the rule names `git status` inside `uv run`: `git log`, a read, is another command"
+rules = ["allow uv run git status"]
+command = "uv run git log"
+expect = "ask"
+
+[[case]]
+id = "prefix-uv-run-the-subcommand-named"
+goals = ["G4"]
+intent = "the inner command the rule names, in its order, is allowed"
+rules = ["allow uv run git status"]
+command = "uv run git status"
+expect = "allow"
+
+# ---------------------------------------------------------------------------
+# F. A trailing `*` and a path word (decided 10-07: PRESENCE)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "star-path-word-is-not-decorative"
+goals = ["G4", "G7"]
+intent = "`allow rm *` beside `allow :delete build/*` does not allow an rm that touches nothing under build (the place is the path rule's, Steven 10-10)"
+rules = ["allow rm *", "allow :delete build/*"]
+command = "rm notes/a.txt"
+expect = "ask"
+
+[[case]]
+id = "star-path-word-present-with-another"
+goals = ["G4", "G7"]
+intent = "a file under build beside one outside the grant: the second is a delete nothing grants (Steven, 10-09, Q7 — reverses the 10-07 reading, under which the weird sequence was allowed)"
+rules = ["allow rm *", "allow :delete build/*"]
+command = "rm build/a.o notes/a.txt"
+expect = "ask"
+
+[[case]]
+id = "star-rule-ends-where-a-command-does"
+goals = ["G4"]
+intent = "two commands are judged apart: the second names nothing under build"
+rules = ["allow rm *", "allow :delete build/*"]
+command = "rm build/a.o; rm notes/a.txt"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# G. What runs: programs by path, functions, PATH, privilege
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "script-by-path-is-an-exec-of-a-file"
+goals = ["G5", "Q5"]
+intent = "running a script in ./scripts is executing a file there — a path rule with an exec operation"
+needs = ["grammar:exec-operation"]
+rules = ["allow :exec ./scripts"]
+command = "./scripts/build.sh --fast"
+expect = "allow"
+
+[[case]]
+id = "program-by-path-is-not-the-named-program"
+goals = ["G4"]
+intent = "`allow ls` names the ls on the trusted PATH; `/bin/ls` is a file, judged as one"
+rules = ["allow ls *"]
+command = "/bin/ls -la"
+expect = "ask"
+
+[[case]]
+id = "program-in-home-bin-is-not-the-named-program"
+goals = ["G4"]
+intent = "nor is a same-named file in ~/.local/bin"
+rules = ["allow ls *"]
+command = "~/.local/bin/ls -la"
+expect = "ask"
+
+[[case]]
+id = "an-alias-on-the-line-disturbs-the-name"
+goals = ["G4"]
+intent = "after an alias on the line, `ll` is not a program the rule names"
+rules = ["allow ls *"]
+command = "alias ll='ls -l'; ll"
+expect = "ask"
+
+[[case]]
+id = "a-path-change-disturbs-the-name"
+goals = ["G4"]
+intent = "a PATH set for the command changes which ls runs"
+rules = ["allow ls *"]
+command = "PATH=./bin:$PATH ls"
+expect = "ask"
+
+[[case]]
+id = "privilege-always-asks"
+goals = ["G4"]
+intent = "sudo asks whatever a rule allows"
+rules = ["allow ls *"]
+command = "sudo ls /root"
+expect = "ask"
+
+[[case]]
+id = "privilege-can-be-denied"
+goals = ["G4"]
+intent = "deny sudo: a hard refusal, not a question"
+rules = ["deny sudo"]
+command = "sudo ls /root"
+expect = "deny"
+
+# ---------------------------------------------------------------------------
+# H. Shell structure the gate must keep taking apart (regression pins)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "shell-cd-then-allowed"
+goals = ["G1"]
+intent = "a cd inside the project then an allowed form"
+rules = ["allow cargo test *"]
+command = "cd crates/core && cargo test"
+expect = "allow"
+
+[[case]]
+id = "shell-second-stage-judged-alone"
+goals = ["G1"]
+intent = "the line is as strict as its worst stage"
+rules = ["allow cargo test *"]
+command = "cargo test && rm -rf build"
+expect = "ask"
+
+[[case]]
+id = "shell-pipeline-of-reads"
+goals = ["G1"]
+intent = "two reads piped run"
+rules = []
+command = "ls src | head -5"
+expect = "allow"
+
+[[case]]
+id = "shell-substitution-feeds-an-unknown-word"
+goals = ["G1"]
+intent = "a word built by substitution cannot be placed"
+rules = []
+command = "cat $(ls src)"
+expect = "ask"
+
+[[case]]
+id = "shell-credential-path-asks-under-any-allow"
+goals = ["G7"]
+intent = "a credential path asks whatever a rule allows"
+rules = ["allow cat *"]
+command = "cat .env"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# I. A program the user models (G3)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "user-model-long-spelling"
+goals = ["G3"]
+intent = "the user models bat (-p/--plain, --pager runs a program); deny bat --plain. A deny, because bat is a read: a bare allow of it decided nothing, so these cases proved no model (T8 H3)"
+needs = ["model:bat"]
+rules = ["deny bat --plain"]
+command = "bat --plain notes.md"
+expect = "deny"
+
+[[case]]
+id = "user-model-short-spelling"
+goals = ["G3"]
+intent = "the model makes -p and --plain one flag: the deny of one is the other's"
+needs = ["model:bat"]
+rules = ["deny bat --plain"]
+command = "bat -p notes.md"
+expect = "deny"
+
+[[case]]
+id = "user-model-flag-after-operand"
+goals = ["G3"]
+intent = "the model says bat permutes (`interspersed`), so the flag may follow the file: under an ask of every bat, the allow of --plain lets it run — with `interspersed = false` it reads as a file, and asks (measured, T8 H3)"
+needs = ["model:bat"]
+rules = ["ask bat *", "allow bat --plain *"]
+command = "bat notes.md --plain"
+expect = "allow"
+
+[[case]]
+id = "user-model-pager-runs-a-program"
+goals = ["G3"]
+intent = "--pager names a program to run, which no rule named"
+needs = ["model:bat"]
+rules = ["allow bat --plain *"]
+command = "bat --plain --pager='less -R' notes.md"
+expect = "ask"
+# ---------------------------------------------------------------------------
+# J. Web (G5): a category of its own, judged by host and direction
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "web-allowed-host"
+goals = ["G5"]
+intent = "allow fetching from api.github.com"
+needs = ["grammar:web", "model:curl"]
+rules = ["allow :fetch api.github.com"]
+command = "curl -s https://api.github.com/repos/o/r"
+expect = "allow"
+
+[[case]]
+id = "web-other-host-asks"
+goals = ["G5"]
+intent = "a host no rule names asks"
+needs = ["grammar:web", "model:curl"]
+rules = []
+command = "curl -s https://example.org/x"
+expect = "ask"
+by = "default:host"
+
+[[case]]
+id = "web-sending-a-file-asks"
+goals = ["G5"]
+intent = "sending a file's contents is the other direction, not covered by a fetch grant"
+needs = ["grammar:web", "model:curl"]
+rules = ["allow :fetch api.github.com"]
+command = "curl -d @notes.md https://api.github.com/repos/o/r/issues"
+expect = "ask"
+by = "default:host"
+
+[[case]]
+id = "web-blanket-program-does-not-reach-an-unallowed-host"
+goals = ["G5", "G7"]
+intent = "as a path, a host is its own category: `allow curl *` does not decide where it may reach (OPEN: the web default)"
+needs = ["grammar:web"]
+rules = ["allow curl *"]
+command = "curl -s https://example.org/x"
+expect = "ask"
+
+[[case]]
+id = "web-implicit-host"
+goals = ["G5", "G3"]
+intent = "gh api reaches api.github.com without writing it; the model knows, and says so on the pane — an implicit host is a gloss, not an act (Steven, 10-09)"
+needs = ["grammar:web", "model:gh"]
+rules = []
+command = "gh api repos/o/r/pulls"
+expect = "allow"
+
+# ---------------------------------------------------------------------------
+# K. find — the expression language (from the programs report, 2026-10-09)
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "find-tests-are-a-read"
+goals = ["G1"]
+intent = "tests only: a read of the project"
+rules = []
+command = "find . -name '*.rs' -type f"
+expect = "allow"
+
+[[case]]
+id = "find-prune-and-print"
+goals = ["G1"]
+intent = "operators and -prune are traversal control, still a read"
+rules = []
+command = "find . -path './target' -prune -o -type f -print"
+expect = "allow"
+
+[[case]]
+id = "find-newer-stats-a-file-inside"
+goals = ["G1"]
+intent = "-newer stats a path outside the starting points — inside the project, a read"
+rules = []
+command = "find . -newer Cargo.toml -name '*.rs' -print"
+expect = "allow"
+
+[[case]]
+id = "find-option-before-the-paths"
+goals = ["G1"]
+intent = "-L before the paths is an option (after them, BSD reads it as an expression token)"
+rules = []
+command = "find -L . -type f -name '*.toml' -maxdepth 3"
+expect = "allow"
+
+[[case]]
+id = "find-delete-asks-by-default"
+goals = ["G1"]
+intent = "the shipped carving: -delete asks"
+rules = []
+command = "find . -name '*.orig' -delete"
+expect = "ask"
+
+[[case]]
+id = "find-exec-sh-asks"
+goals = ["G1"]
+intent = "-exec with sh -c is the usual escape to arbitrary shell"
+rules = []
+command = "find . -name '*.py' -exec sh -c 'echo \"$1\"' _ {} \\;"
+expect = "ask"
+
+[[case]]
+id = "find-fprint-writes-a-file"
+goals = ["G1"]
+intent = "-fprint creates its file at parse time even if nothing matches"
+rules = []
+command = "find . -name '*.log' -fprint /tmp/a"
+expect = "ask"
+
+[[case]]
+id = "find-files0-from-reads-a-file"
+goals = ["G1"]
+intent = "the starting points come from a file no operand names"
+rules = []
+command = "find . -files0-from list -print"
+expect = "ask"
+by = "default:guarded"
+
+[[case]]
+id = "find-exec-into-a-pipe-asks"
+goals = ["G1"]
+intent = "exec, and the output piped to a program that uploads"
+rules = []
+command = "find . -type f -exec cat {} + | gh gist create -"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# L. gh — a Cobra tree with dynamic first words
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "gh-pr-list-is-a-read-with-a-model"
+goals = ["G3", "G1"]
+intent = "a harmless read, once gh is modelled (network: fetch from api.github.com)"
+needs = ["model:gh", "grammar:web"]
+rules = []
+command = "gh pr list --limit 20"
+expect = "allow"
+
+[[case]]
+id = "gh-pr-list-under-a-rule"
+goals = ["G4"]
+intent = "the same read under the user's rule, beneath an ask of every gh"
+rules = ["ask gh *", "allow gh pr list *"]
+command = "gh pr list --limit 20"
+expect = "allow"
+
+[[case]]
+id = "gh-api-explicit-get-with-a-field"
+goals = ["G3", "G4"]
+intent = "-X GET with -f puts the field in the query: still a GET (verified in gh's source)"
+needs = ["model:gh"]
+rules = ["ask gh api *", "allow gh api --method=GET *"]
+command = "gh api -X GET search/issues -f q='repo:cli/cli is:open'"
+expect = "allow"
+
+[[case]]
+id = "gh-api-any-host"
+goals = ["G5"]
+intent = "--hostname sends the request, and a matching token, to any host"
+needs = ["model:gh", "grammar:web"]
+rules = []
+command = "gh api --hostname example.org user"
+expect = "ask"
+by = "default:host"
+
+[[case]]
+id = "gh-auth-token-prints-a-secret"
+goals = ["G1"]
+intent = "a read whose output is a credential must not run unasked"
+needs = ["model:gh"]
+rules = ["allow gh *"]
+command = "gh auth token"
+expect = "ask"
+
+[[case]]
+id = "gh-alias-set-shell-stores-code"
+goals = ["G1"]
+intent = "a shell alias stored now runs sh on a later `gh x`; the blanket covers storing it, and `gh x` — an unknown word, a program run — asks then (probe P3, 10-09)"
+needs = ["model:gh"]
+rules = ["allow gh *"]
+command = "gh alias set --shell x 'echo \"$1\"'"
+expect = "allow"
+
+[[case]]
+id = "gh-extension-runs-a-third-party-binary"
+goals = ["G1"]
+intent = "an unknown first word is an extension: gh-dash from the extension dir"
+needs = ["model:gh"]
+rules = ["allow gh *"]
+command = "gh dash"
+expect = "ask"
+
+[[case]]
+id = "gh-pr-checkout-runs-git"
+goals = ["G1"]
+intent = "checkout runs git and changes the working tree (hooks, config-driven programs)"
+needs = ["model:gh"]
+rules = ["allow gh pr view *"]
+command = "gh pr checkout 12"
+expect = "ask"
+
+[[case]]
+id = "gh-skill-install-writes-the-harness-surface"
+goals = ["G7"]
+intent = "writes into .claude/skills of this repository — the harness's own instruction surface"
+needs = ["model:gh"]
+rules = ["allow gh *"]
+command = "gh skill install owner/skills --agent claude-code --scope project"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# M. git — global options before the verb, config as a second argv
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "git-status-is-a-read-with-a-model"
+goals = ["G3", "G1"]
+intent = "a harmless read, once git is modelled (under a clean config)"
+needs = ["model:git"]
+rules = []
+command = "git status --porcelain"
+expect = "allow"
+
+[[case]]
+id = "git-log-is-a-read-with-a-model"
+goals = ["G3", "G1"]
+intent = "a harmless read, once git is modelled"
+needs = ["model:git"]
+rules = []
+command = "git log --oneline -20"
+expect = "allow"
+
+[[case]]
+id = "git-c-names-a-program"
+goals = ["G4"]
+intent = "-c core.pager=… names a program the pager runs; a blanket allow of git must not cover it"
+needs = ["model:git"]
+rules = ["allow git *"]
+command = "git -c core.pager=less -p log"
+expect = "ask"
+by = "hard:code"
+
+[[case]]
+id = "git-log-output-writes-a-file"
+goals = ["G7"]
+intent = "a read command writing a file outside the project"
+rules = ["allow git log *"]
+command = "git log --output=/tmp/a -3"
+expect = "ask"
+by = "default:outside"
+
+[[case]]
+id = "git-push-force-not-covered-by-reads"
+goals = ["G4"]
+intent = "allows of two read verbs do not cover a push"
+rules = ["allow git status *", "allow git log *"]
+command = "git push --force origin main"
+expect = "ask"
+
+[[case]]
+id = "git-unknown-verb-is-an-external-program"
+goals = ["G4"]
+intent = "an unknown verb runs git-<verb> from PATH: not what `allow git *` named"
+needs = ["model:git"]
+rules = ["allow git *"]
+command = "git foo"
+expect = "ask"
+
+[[case]]
+id = "git-commit-with-message-allowed"
+goals = ["G4"]
+intent = "allow git commit *: a commit with its message"
+rules = ["allow git commit *"]
+command = "git commit -m 'fix: the wrap cache'"
+expect = "allow"
+
+[[case]]
+id = "git-commit-without-message-opens-an-editor"
+goals = ["G4"]
+intent = "without -m, commit runs the editor — a program named by config"
+needs = ["model:git"]
+rules = ["allow git commit *"]
+command = "git commit"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# N. sed — a script language, and an argv that parses differently per implementation
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "sed-print-lines-allowed"
+goals = ["G1"]
+intent = "the shipped allow: -n with a print script"
+rules = []
+command = "sed -n '1,20p' Cargo.toml"
+expect = "allow"
+
+[[case]]
+id = "sed-substitute-to-stdout-with-a-model"
+goals = ["G3", "G1"]
+intent = "a substitution to stdout is a read, once sed's script is parsed"
+needs = ["model:sed"]
+rules = []
+command = "sed -E 's/[[:space:]]+$//' src/main.rs"
+expect = "allow"
+
+[[case]]
+id = "sed-in-place-asks-by-default"
+goals = ["G1"]
+intent = "-i rewrites the operands in place"
+rules = []
+command = "sed -i '' 's/foo/bar/' src/main.rs"
+expect = "ask"
+by = "default:effect"
+
+[[case]]
+id = "sed-in-place-under-a-blanket-allow"
+goals = ["G4"]
+intent = "a blanket allow of sed covers -i; the file is inside the project"
+rules = ["allow sed *"]
+command = "sed -i '' 's/foo/bar/' src/main.rs"
+expect = "allow"
+
+[[case]]
+id = "sed-w-in-the-script-writes-outside"
+goals = ["G7"]
+intent = "`w /tmp/a` inside the script creates a file outside the project — a path act the model reads out of the script"
+needs = ["model:sed"]
+rules = ["allow sed *"]
+command = "sed 's/x/y/w /tmp/a' file.txt"
+expect = "ask"
+
+[[case]]
+id = "sed-e-runs-the-pattern-space"
+goals = ["G1"]
+intent = "GNU sed's `e` flag runs the pattern space as a shell command"
+needs = ["model:sed"]
+rules = ["allow sed *"]
+command = "sed 's/^/echo /e' file.txt"
+expect = "ask"
+
+[[case]]
+id = "sed-sandbox-is-not-a-reason-to-trust"
+goals = ["G1"]
+intent = "--sandbox is GNU's; BSD sed rejects it — the flag must not buy trust unless the implementation is known"
+needs = ["model:sed"]
+rules = []
+command = "sed --sandbox 'w /tmp/a' file.txt"
+expect = "ask"
+by = "default:unknown"
+
+# ---------------------------------------------------------------------------
+# O. awk — the danger is in the program text, and the protective flag lies
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "awk-print-field-with-a-model"
+goals = ["G3", "G1"]
+intent = "a program with no system(), pipe or redirect is a read"
+needs = ["model:awk"]
+rules = []
+command = "awk '{print $1}' file.txt"
+expect = "allow"
+
+[[case]]
+id = "awk-system-under-a-blanket-allow"
+goals = ["G4"]
+intent = "system() runs a shell command; a blanket allow must not cover it"
+needs = ["model:awk"]
+rules = ["allow awk *"]
+command = "awk 'BEGIN{system(\"id\")}'"
+expect = "ask"
+
+[[case]]
+id = "awk-system-spelled-with-a-space-asks"
+goals = ["G1"]
+intent = "awk takes a space before a builtin's parenthesis; `system (` ran unasked, safe unattended (review stop 12, T8; docs/Security/SECURITY-2026-10-26-awk-runs-a-command-unasked.md)"
+needs = ["model:awk"]
+rules = []
+command = "awk 'BEGIN{system (\"id\")}'"
+expect = "ask"
+
+[[case]]
+id = "awk-redirect-in-the-program-writes"
+goals = ["G7"]
+intent = "print > file writes a path outside the project from inside the program"
+needs = ["model:awk"]
+rules = ["allow awk *"]
+command = "awk '{print > \"/tmp/a\"}' file.txt"
+expect = "ask"
+
+[[case]]
+id = "awk-program-from-a-file"
+goals = ["G1"]
+intent = "-f takes the program from a file the gate has not read"
+rules = []
+command = "awk -f /tmp/a.awk file.txt"
+expect = "ask"
+
+[[case]]
+id = "awk-sandbox-flag-is-ignored-by-bwk"
+goals = ["G1"]
+intent = "BWK awk warns `unknown option --sandbox ignored` and runs system() anyway (probed)"
+needs = ["model:awk"]
+rules = ["allow awk *"]
+command = "awk --sandbox 'BEGIN{system(\"true\")}'"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# P. uv — reads that re-lock, runs that install, a venv that deletes
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "uv-pip-list-with-a-model"
+goals = ["G3", "G1"]
+intent = "a harmless read, once uv is modelled"
+needs = ["model:uv"]
+rules = []
+command = "uv pip list"
+expect = "allow"
+
+[[case]]
+id = "uv-tree-frozen-with-a-model"
+goals = ["G3", "G1"]
+intent = "--frozen makes tree a read; without it tree re-locks"
+needs = ["model:uv"]
+rules = []
+command = "uv tree --frozen"
+expect = "allow"
+
+[[case]]
+id = "uv-tree-relocks"
+goals = ["G1"]
+intent = "tree without --frozen re-locks: network and builds"
+needs = ["model:uv"]
+rules = []
+command = "uv tree"
+expect = "ask"
+by = "default:effect"
+
+[[case]]
+id = "uv-run-a-url-fetches-and-runs"
+goals = ["G5"]
+intent = "a URL operand is downloaded and executed: a host act no rule allows"
+needs = ["model:uv", "grammar:web"]
+rules = ["allow uv run *"]
+command = "uv run https://example.org/script.py"
+expect = "ask"
+
+[[case]]
+id = "uv-sync-asks"
+goals = ["G1"]
+intent = "sync re-locks, builds, and removes packages"
+rules = []
+command = "uv sync"
+expect = "ask"
+
+[[case]]
+id = "uv-directory-relocates-outside"
+goals = ["G7"]
+intent = "--directory moves the whole operation to another tree, outside the project"
+rules = ["allow uv *"]
+command = "uv --directory /srv/other sync"
+expect = "ask"
+by = "default:outside"
+
+[[case]]
+id = "uv-venv-deletes-an-existing-venv"
+goals = ["G1"]
+intent = "venv removes an existing .venv at the target before creating one"
+rules = []
+command = "uv venv"
+expect = "ask"
+
+# ---------------------------------------------------------------------------
+# Q. The adversarial lines (probe P3, design §8.6), written 2026-10-09 in
+# the then-DRAFT grammar (§8.2: `:*`, `:delete`, `:exec`, `:fetch`), to pin
+# what the acts design decides before it was built. It is built: every rule
+# here parses, and every case holds.
+# ---------------------------------------------------------------------------
+
+[[case]]
+id = "q-exception-under-a-deny-allows-the-named-form"
+goals = ["G8", "G4"]
+intent = "a deny on the program with an allow on one form: the allow is the exception, as `allow /mnt/foo` is under `deny /mnt`"
+rules = ["deny find", "allow find -name"]
+command = "find . -name x"
+expect = "allow"
+
+[[case]]
+id = "q-deny-stands-where-the-exception-does-not-apply"
+goals = ["G8"]
+intent = "the same pair; a find that is not the named form is denied"
+rules = ["deny find", "allow find -name"]
+command = "find . -type f"
+expect = "deny"
+
+[[case]]
+id = "q-blanket-find-runs-an-inner-read-inside"
+goals = ["G4", "G7"]
+intent = "a blanket lifts the -exec carving, and the program it runs is a read of the project"
+rules = ["allow find *"]
+command = "find . -exec cat {} \\;"
+expect = "allow"
+needs = ["model:find"]
+
+[[case]]
+id = "q-blanket-find-does-not-run-an-inner-delete"
+goals = ["G4", "G7"]
+intent = "the same blanket; the inner program deletes under the start, which nothing grants"
+rules = ["allow find *"]
+command = "find . -exec rm {} \\;"
+expect = "ask"
+needs = ["model:find"]
+
+[[case]]
+id = "q-two-blanket-programs-still-ask-for-a-delete-inside"
+goals = ["G7"]
+intent = "both programs allowed; the delete of the project tree asks until a path grants it (Q7)"
+rules = ["allow find *", "allow rm *"]
+command = "find . -exec rm {} \\;"
+expect = "ask"
+needs = ["model:find"]
+
+[[case]]
+id = "q-git-config-names-a-pager-under-a-blanket"
+goals = ["G4"]
+intent = "a program named by configuration is an act a blanket never covers"
+rules = ["allow git *"]
+command = "git -c core.pager=less log"
+expect = "ask"
+needs = ["model:git"]
+
+[[case]]
+id = "q-broad-read-grant-leaves-the-credential-guard"
+goals = ["G6"]
+intent = "a user read grant on home: the shipped credential guard is more specific and stays (Q9)"
+rules = ["allow :read ~"]
+command = "cat ~/.ssh/config"
+expect = "ask"
+
+[[case]]
+id = "q-a-grant-as-specific-as-the-guard-lifts-it"
+goals = ["G6"]
+intent = "a user grant at least as specific as the credential guard lifts it (Q9)"
+rules = ["allow :read ~/.ssh"]
+command = "cat ~/.ssh/config"
+expect = "allow"
+
+[[case]]
+id = "q-incomparable-path-rules-fall-to-the-strictest"
+goals = ["G6"]
+intent = "a name-glob deny and a tree allow neither of which includes the other: the strictest"
+rules = ["deny :* **/secret", "allow :* /mnt"]
+command = "cat /mnt/a/secret/x"
+expect = "deny"
+
+[[case]]
+id = "q-web-flag-is-a-program-run-under-a-form-allow"
+goals = ["G4"]
+intent = "--web opens a browser: a program run the model knows, not covered by the form's blanket"
+rules = ["allow gh pr view *"]
+command = "gh pr view 12 --web"
+expect = "ask"
+needs = ["model:gh"]
+
+[[case]]
+id = "q-fetch-allowed-but-the-write-lands-outside"
+goals = ["G5", "G7"]
+intent = "an allowed fetch whose -o writes outside the project asks for the write"
+rules = ["allow curl *", "allow :fetch api.github.com"]
+command = "curl -s https://api.github.com/x -o /tmp/out.json"
+expect = "ask"
+needs = ["model:curl"]
+
+[[case]]
+id = "q-fetch-allowed-and-the-write-lands-inside"
+goals = ["G5"]
+intent = "the same fetch writing inside the project is allowed"
+rules = ["allow curl *", "allow :fetch api.github.com"]
+command = "curl -s https://api.github.com/x -o out.json"
+expect = "allow"
+needs = ["model:curl"]
+
+[[case]]
+id = "q-in-place-edit-outside-asks-under-a-blanket"
+goals = ["G7"]
+intent = "a blanket sed; -i on a file outside the project is a write nothing grants"
+rules = ["allow sed *"]
+command = "sed -i '' 's/a/b/' /etc/hosts"
+expect = "ask"
+needs = ["model:sed"]
+
+[[case]]
+id = "q-redirect-outside-asks-under-a-form-allow"
+goals = ["G7"]
+intent = "the form is allowed; the redirect writes outside the project"
+rules = ["allow uv run pytest *"]
+command = "uv run pytest tests/ > /tmp/report.txt"
+expect = "ask"
+
+[[case]]
+id = "q-dev-null-is-not-a-file"
+goals = ["G1"]
+intent = "a redirect to /dev/null is no write anywhere"
+rules = ["allow cargo *"]
+command = "cargo build 2>/dev/null"
+expect = "allow"
+
+[[case]]
+id = "q-unmodelled-blanket-inside-allows"
+goals = ["G1"]
+intent = "an unmodelled program under a blanket, inside the project: the prefix matches"
+rules = ["allow make *"]
+command = "make test"
+expect = "allow"
+
+[[case]]
+id = "q-unmodelled-prefix-stops-at-an-unknown-word"
+goals = ["G4"]
+intent = "an unmodelled allow is a literal prefix; a word past it asks"
+rules = ["allow make test"]
+command = "make test CC=cc"
+expect = "ask"
+by = "uncovered"
+
+[[case]]
+id = "q-unmodelled-words-out-of-order"
+goals = ["G4"]
+intent = "an unmodelled allow's bare words are a prefix in order: the same words in another order are another command"
+rules = ["allow make test *"]
+command = "make clean test"
+expect = "ask"
+
+[[case]]
+id = "q-unmodelled-flag-is-found-anywhere"
+goals = ["G4"]
+intent = "an unmodelled allow's flag is present anywhere, as a person reads the rule; a flag's position says nothing the gate can use without a model (Steven, 10-10)"
+rules = ["allow make test --jobs=4 *"]
+command = "make --jobs=4 test"
+expect = "allow"
+
+[[case]]
+id = "q-unmodelled-flag-spelling-is-literal"
+goals = ["G4", "G3"]
+intent = "without a model, another spelling of the option is another word: the rule's note says so"
+rules = ["allow make test --jobs=4 *"]
+command = "make test -j4"
+expect = "ask"
+
+[[case]]
+id = "q-unmodelled-deny-beside-an-allow"
+goals = ["G4", "G8"]
+intent = "a deny on an unmodelled program's flag is met by contact, beside an allow of another flag"
+rules = ["allow make test *", "deny make --always-make"]
+command = "make test --always-make"
+expect = "deny"
+
+[[case]]
+id = "q-stream-fed-argv-asks"
+goals = ["G1"]
+intent = "xargs runs a program on words the gate never sees"
+rules = []
+command = "ls | xargs rm"
+expect = "ask"
+
+[[case]]
+id = "q-project-write-grant-leaves-the-harness-guard"
+goals = ["G6"]
+intent = "a write grant on the project does not lift the shipped guard on .claude/ (Q13)"
+rules = ["allow :write ."]
+command = "echo x > .claude/settings.json"
+expect = "ask"
+
+[[case]]
+id = "q-a-named-write-grant-lifts-the-harness-guard"
+goals = ["G6"]
+intent = "a grant naming .claude lifts its guard: a soft ask (Q13)"
+rules = ["allow :write .claude"]
+command = "echo x > .claude/settings.json"
+expect = "allow"
+
+[[case]]
+id = "q-unknown-gh-word-runs-an-extension"
+goals = ["G4"]
+intent = "an unknown first word under gh runs gh-<word>, a program the blanket does not cover"
+rules = ["allow gh *"]
+command = "gh x"
+expect = "ask"
+needs = ["model:gh"]
+
+[[case]]
+id = "q-delete-grant-covers-the-tree-itself"
+goals = ["G6", "G7"]
+intent = "a delete grant on a tree covers deleting the tree"
+rules = ["allow rm *", "allow :delete build"]
+command = "rm -r build"
+expect = "allow"
+
+[[case]]
+id = "q-delete-grant-does-not-climb-out"
+goals = ["G6", "G7"]
+intent = "a climb out of the granted tree is not granted"
+rules = ["allow rm *", "allow :delete build"]
+command = "rm -r build/.."
+expect = "ask"
+
+[[case]]
+id = "q-program-rule-path-word-is-an-argument"
+goals = ["G7"]
+intent = "a path word on an allow is an argument the command must carry, never a grant: the delete still asks (Steven, 10-10: program rules are about arguments and flags, path rules about access; reverses the scoped grant of 10-09)"
+rules = ["allow rm build/a.o"]
+command = "rm build/a.o"
+expect = "ask"
+
+[[case]]
+id = "q-a-place-is-granted-by-a-path-rule"
+goals = ["G5", "G7"]
+intent = "the place a program rule cannot grant, a path rule does"
+rules = ["allow rm", "allow :delete build/*"]
+command = "rm build/a.o"
+expect = "allow"
+
+[[case]]
+id = "q-scoped-grant-names-what-is-in-the-tree-not-the-tree"
+goals = ["G6"]
+intent = "`build/*` names what is in build, not build itself"
+rules = ["allow rm -r", "allow :delete build/*"]
+command = "rm -r build"
+expect = "ask"
+
+[[case]]
+id = "q-exec-grant-covers-the-program-not-its-words"
+goals = ["G7"]
+intent = "an exec grant covers running the file; a word outside the project still asks"
+rules = ["allow :exec ./scripts"]
+command = "./scripts/build.sh --fast /etc/hosts"
+expect = "ask"
+
+# ---- the calls made in the switch, pinned (review 2026-10-10, C) ----------
+
+[[case]]
+id = "r-double-star-on-an-allow-grants-no-place"
+goals = ["G6"]
+intent = "`**` after a program once granted its paths anywhere; places are path rules' now (Steven, 10-10), so on an allow it is `*` — see r-a-grant-of-every-place"
+rules = ["allow rm **"]
+command = "rm /etc/hosts"
+expect = "ask"
+
+[[case]]
+id = "r-a-grant-of-every-place"
+goals = ["G6"]
+intent = "every place below the root, granted by a path rule"
+rules = ["allow rm", "allow :delete /**"]
+command = "rm /etc/hosts"
+expect = "allow"
+
+[[case]]
+id = "r-trailing-double-star-is-below-the-directory"
+goals = ["G6"]
+intent = "`build/**` grants what is below build, not build: a delete of the directory asks (Steven, 10-10)"
+rules = ["allow rm *", "allow :delete build/**"]
+command = "rm -rf build"
+expect = "ask"
+
+[[case]]
+id = "r-a-directory-grant-covers-the-directory"
+goals = ["G6"]
+intent = "`build` alone is the directory and all below it"
+rules = ["allow rm *", "allow :delete build"]
+command = "rm -rf build"
+expect = "allow"
+
+[[case]]
+id = "r-dot-double-star-never-covers-the-project"
+goals = ["G6"]
+intent = "`./**` is what is below the start, never the start"
+rules = ["allow rm *", "allow :delete ./**"]
+command = "rm -rf ."
+expect = "ask"
+
+[[case]]
+id = "r-a-fence-reaches-the-rungs-above-it"
+goals = ["G7"]
+intent = "operations are a ladder: `deny :write` stops a delete there"
+rules = ["allow *", "allow :* /**", "deny :write /etc"]
+command = "rm /etc/x"
+expect = "deny"
+
+[[case]]
+id = "r-a-fence-met-from-above-asks"
+goals = ["G7"]
+intent = "a directory above a fence asks, naming the rule: `rm -rf /` removes /etc with the rest"
+rules = ["allow rm *", "allow :delete /", "deny rm /etc/**"]
+command = "rm -rf /"
+expect = "ask"
+
+[[case]]
+id = "r-a-glob-meets-a-guard-by-contact"
+goals = ["Q5"]
+intent = "a glob that could pick a credential asks (`~/.ss?` meets `~/.ssh`)"
+rules = ["allow :read ~"]
+command = "cat ~/.ss?/config"
+expect = "ask"
+by = "guard"
+
+[[case]]
+id = "r-a-glob-that-meets-no-guard-reads"
+goals = ["Q5"]
+intent = "the control: the same glob shape meeting no credential reads under the same grant — so contact is the reason above, not the outside (review stop 12, T8 M7)"
+rules = ["allow :read ~"]
+command = "cat ~/.zz?/config"
+expect = "allow"
+by = "rule"
+
+[[case]]
+id = "r-a-bare-glob-asks-the-cost"
+goals = ["Q5"]
+intent = "a bare `*` may pick a `.pem`: it asks — the precision cost of contact, measured in the replay"
+rules = []
+command = "ls *"
+expect = "ask"
+
+[[case]]
+id = "r-a-credential-guard-is-lifted-by-the-file-rule"
+goals = ["Q9"]
+intent = "a rule naming the file lifts the shipped guard (users decide; what `A` proposes)"
+rules = ["allow :read ~/.ssh/config"]
+command = "cat ~/.ssh/config"
+expect = "allow"
+
+[[case]]
+id = "r-no-allow-lifts-a-privilege-wrapper"
+goals = ["Q8"]
+intent = "a privilege wrapper is a hard ask under any allow"
+rules = ["allow sudo *", "allow ls *"]
+command = "sudo ls"
+expect = "ask"
+
+[[case]]
+id = "r-a-privilege-wrapper-inside-an-argv"
+goals = ["Q8"]
+intent = "the hard ask holds inside an argv too (review 2026-10-10, A)"
+rules = ["allow find *", "allow sudo *", "allow ls *"]
+command = "find . -exec sudo ls \\;"
+expect = "ask"
+
+[[case]]
+id = "r-an-unmodelled-flag-value-is-the-next-word"
+goals = ["G4"]
+intent = "a deny written `--context=prod*` meets `--context prod-east` (the next word is the value)"
+rules = ["allow kubectl *", "deny kubectl --context=prod*"]
+command = "kubectl --context prod-east get pods"
+expect = "deny"
+
+[[case]]
+id = "r-a-one-letter-deny-meets-a-cluster"
+goals = ["G4"]
+intent = "without a model, `-k` meets `-sk` by contact"
+rules = ["allow frob *", "deny frob -k"]
+command = "frob -sk x"
+expect = "deny"
+
+[[case]]
+id = "r-a-long-option-abbreviates"
+goals = ["G4"]
+intent = "GNU getopt takes a unique prefix: `--no` is `--no-preserve-root`, the shipped deny"
+rules = ["allow rm *", "allow :delete /**"]
+command = "rm -rf --no /"
+expect = "deny"
+
+[[case]]
+id = "r-a-redirect-grant-unlocks-no-writer"
+goals = ["G7"]
+intent = "a grant of the redirect's target says nothing about what the program writes (review 2026-10-10, A)"
+rules = ["allow :write /tmp/out"]
+command = "git reset --hard > /tmp/out"
+expect = "ask"
+
+[[case]]
+id = "r-a-shell-set-variable-is-unknown"
+goals = ["Q5"]
+intent = "`$_` is the last argument of the previous command, not a name the gate knows (review 2026-10-10, C)"
+rules = []
+command = "echo ~/.ssh/config; cat ${_:-README.md}"
+expect = "ask"
+
+[[case]]
+id = "r-pwd-after-a-cd-is-not-the-gates"
+goals = ["Q5"]
+intent = "`$PWD` after a `cd` is where the line went (review 2026-10-10, E)"
+rules = []
+command = "cd ~/.ssh && cat $PWD/config"
+expect = "ask"
+
+[[case]]
+id = "r-a-bracket-class-is-the-shells"
+goals = ["Q5"]
+intent = "`.[.]` is `..` to bash: placed nowhere (review 2026-10-10, A)"
+rules = []
+command = "cat .[.]/.ssh/config"
+expect = "ask"
+
+# ---- the second round (2026-10-10, E1 and E2) ------------------------------
+
+[[case]]
+id = "r2-a-handle-in-a-for-list-faces-a-human"
+goals = ["Q8"]
+intent = "the gate reads the text the executor expands: a handle the parser's fields dropped is still spent (E2)"
+rules = []
+command = "for x in {{tok.1a2b}}; do echo $x | tr a-z n-za-m; done"
+expect = "ask"
+
+[[case]]
+id = "r2-an-assignment-only-stage-opens-its-redirection"
+goals = ["G7"]
+intent = "`X=1 > f` truncates f: the redirection is read with no command (E2)"
+rules = []
+command = "X=1 > /srv/notes.txt"
+expect = "ask"
+
+[[case]]
+id = "r2-an-inner-xargs-reads-a-stream"
+goals = ["Q5"]
+intent = "a property of the stage's peel holds in every inner argv: `xargs` inside `find -exec` is unsound too (E1)"
+rules = ["allow find *", "allow xargs *", "allow rm *"]
+command = "cat list.txt | find . -maxdepth 0 -exec xargs rm \\;"
+expect = "ask"
+
+[[case]]
+id = "r2-a-regex-deny-reaches-an-inner-program"
+goals = ["G4"]
+intent = "a `re:` deny reads an inner program as its own text (E1)"
+rules = ["allow find *", "allow :delete build", "deny re:^rm( |$)"]
+command = "find build/x -exec rm -r {} \\;"
+expect = "deny"
+
+[[case]]
+id = "r2-a-derived-fence-reaches-the-inner-program"
+goals = ["G7"]
+intent = "a program rule's path words fence the inner program its form applied to (E1)"
+rules = ["allow uv run *", "allow :delete /srv/out", "deny uv run rm /srv/out/keep/**"]
+command = "uv run rm /srv/out/keep/a"
+expect = "deny"
+
+[[case]]
+id = "r2-tar-create-writes-the-archive"
+goals = ["G4"]
+intent = "`tar -c` makes the archive `-f` names a write, the members stay reads: the `.git/hooks` guard meets it (E1)"
+rules = ["allow tar *"]
+command = "tar -cf .git/hooks/pre-commit notes.txt"
+expect = "ask"
+
+[[case]]
+id = "r2-a-directory-flag-moves-the-program"
+goals = ["G6"]
+intent = "`git -C D` places its later words under D, as a `cd` would (E1)"
+rules = ["allow git *", "allow :read /srv/out", "allow :delete build"]
+command = "git -C /srv/out rm -r build"
+expect = "ask"
+
+[[case]]
+id = "r2-a-redirection-is-offered-as-a-path-rule"
+goals = ["Q9"]
+intent = "the proposal for a redirect outside is `:write PATH`, never a grant to the program a later write would widen through (E2); here the rule it would propose, held"
+rules = ["allow :write /srv/x"]
+command = "cat notes.txt > /srv/x"
+expect = "allow"
+
+[[case]]
+id = "r2-a-data-operand-narrows-the-rule"
+goals = ["G4"]
+intent = "an operand the model reads as data (a refspec) is carried as written even when it looks like a path: the rule names the branch (E2)"
+rules = ["allow git push origin feature/x"]
+command = "git push origin main"
+expect = "ask"
+
+[[case]]
+id = "declared-value-is-the-flags"
+goals = ["G4"]
+intent = "`-l=` declares that an unmodelled program's flag takes a value, any value: the word after it is the flag's, not an argument the rule left out (Steven, 10-10)"
+rules = ["allow mytool -l=|--language="]
+command = "mytool --language rust"
+expect = "allow"
+
+[[case]]
+id = "undeclared-value-is-an-argument"
+goals = ["G4"]
+intent = "without a declaration nothing says `-l` takes a value, so `rust` is an argument `allow mytool -l` did not name"
+rules = ["allow mytool -l"]
+command = "mytool -l rust"
+expect = "ask"
+
+[[case]]
+id = "declared-value-is-still-a-place"
+goals = ["G4", "G7"]
+intent = "a declared value is still judged as a path wherever it could be one, so a wrong declaration costs a prompt and never hides a target"
+rules = ["allow mytool -l="]
+command = "mytool -l /srv/x/a"
+expect = "ask"
+
+[[case]]
+id = "deny-every-value-of-a-flag"
+goals = ["G4"]
+intent = "`deny mytool -l=*` denies every value, under a blanket allow"
+rules = ["allow mytool *", "deny mytool -l=*"]
+command = "mytool -p -l rust"
+expect = "deny"

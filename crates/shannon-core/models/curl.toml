@@ -1,0 +1,54 @@
+# curl — fetches the URLs it is given (a host act per URL, direction
+# fetch), until a flag sends (`-d`, `-F`, `-T`: direction send) or writes a
+# file (`-o`, `-O`). `-u` carries a credential on the line; `-K` reads a
+# config file that can name any URL; `--proxy` reroutes every host.
+# `-X POST` with no body still sends. Reasonable coverage, not curl's 250
+# options: an unknown flag asks. Not yet said: `-d @FILE` and `--json
+# @FILE` READ the file they send — a `data` role cannot say its `@` form,
+# so that read is not an act (a model gap, noted for the verified set).
+
+name = "curl"
+effect = "read"
+trust = "verified"
+family = { bundling = true, interspersed = true }
+examples.match = [
+  "curl -s https://api.github.com/x",
+  "curl -sSL -o out.json https://api.github.com/x",
+  "curl -X POST -d @body.json https://example.com/api",
+]
+examples.not_match = ["curl --frob https://example.com"]
+
+positional = [{ at = "rest", role = "url" }]
+
+flag = [
+  { names = ["-s", "--silent"] }, { names = ["-S", "--show-error"] }, { names = ["-L", "--location"] },
+  { names = ["-f", "--fail"] }, { names = ["--fail-with-body"] }, { names = ["-k", "--insecure"] },
+  { names = ["-v", "--verbose"] }, { names = ["-i", "--include"] }, { names = ["-I", "--head"] },
+  { names = ["-N", "--no-buffer"] }, { names = ["-#", "--progress-bar"] }, { names = ["--compressed"] },
+  { names = ["-g", "--globoff"] }, { names = ["-4", "--ipv4"] }, { names = ["-6", "--ipv6"] },
+  { names = ["-m", "--max-time"], arity = 1, role = "number" },
+  { names = ["--connect-timeout"], arity = 1, role = "number" },
+  { names = ["--retry"], arity = 1, role = "number" },
+  { names = ["-X", "--request"], arity = 1, role = "enum" },
+  { names = ["-H", "--header"], arity = 1, role = "data" },
+  { names = ["-A", "--user-agent"], arity = 1, role = "data" },
+  { names = ["-e", "--referer"], arity = 1, role = "data" },
+  { names = ["-b", "--cookie"], arity = 1, role = "data" },
+  { names = ["-c", "--cookie-jar"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["-w", "--write-out"], arity = 1, role = "data" },
+  { names = ["-r", "--range"], arity = 1, role = "data" },
+  { names = ["--url"], arity = 1, role = "url" },
+  { names = ["-u", "--user"], arity = 1, role = "data" },
+  { names = ["--proxy", "-x"], canon = "proxy", arity = 1, role = "url" },
+  { names = ["-K", "--config"], arity = 1, role = "read_file", benign = false, why = "a curl config file can name any URL and any option" },
+  # Writes a file.
+  { names = ["-o", "--output"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["-O", "--remote-name"], effect = "write" },
+  { names = ["--output-dir"], arity = 1, role = "dir", effect = "write" },
+  { names = ["-D", "--dump-header"], arity = 1, role = "write_file", effect = "write" },
+  # Sends.
+  { names = ["-d", "--data", "--data-binary", "--data-raw", "--data-urlencode", "--data-ascii"], canon = "data", arity = 1, role = "data", effect = "write" },
+  { names = ["--json"], arity = 1, role = "data", effect = "write" },
+  { names = ["-F", "--form"], arity = 1, role = "kv", effect = "write" },
+  { names = ["-T", "--upload-file"], arity = 1, role = "read_file", effect = "write" },
+]

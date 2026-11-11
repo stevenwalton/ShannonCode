@@ -1,0 +1,14 @@
+# tr — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "tr"
+effect = "read"
+trust = "generated"
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-d", "--delete"] },
+  { names = ["-s", "--squeeze-repeats"] },
+  { names = ["-c", "-C", "--complement"] },
+  { names = ["-t", "--truncate-set1"] },
+]

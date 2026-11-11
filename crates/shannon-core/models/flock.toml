@@ -1,0 +1,10 @@
+# flock — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "flock"
+effect = "exec"
+trust = "generated"
+family = { bundling = true }
+positional = [{ at = 0, role = "data" }, { at = "rest", role = "argv" }]
+flag = [
+]

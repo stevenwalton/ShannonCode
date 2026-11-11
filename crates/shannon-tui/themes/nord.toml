@@ -1,0 +1,43 @@
+# Nord — github.com/nordtheme/nord (MIT); see NOTICE.md. The palette's
+# sixteen terminal colours and its ground: every role the shipped `terminal`
+# theme paints is drawn in them. Its bright magenta is its magenta, the
+# colour of a withheld value, so the decision pane's expansions and
+# constants take its orange instead.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"decision.variable.special" = "orange"
+"decision.tag" = "orange"
+"decision.number" = "orange"
+"decision.constant" = "orange"
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#2e3440"
+text = "#d8dee9"
+comment = "#616e88"
+surface = "#434c5e"
+orange = "#d08770"
+black = "#3b4252"
+red = "#bf616a"
+green = "#a3be8c"
+yellow = "#ebcb8b"
+blue = "#81a1c1"
+magenta = "#b48ead"
+cyan = "#88c0d0"
+white = "#e5e9f0"
+bright-black = "#4c566a"
+bright-red = "#bf616a"
+bright-green = "#a3be8c"
+bright-yellow = "#ebcb8b"
+bright-blue = "#81a1c1"
+bright-magenta = "#b48ead"
+bright-cyan = "#8fbcbb"
+bright-white = "#eceff4"

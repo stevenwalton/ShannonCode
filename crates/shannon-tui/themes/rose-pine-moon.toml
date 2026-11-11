@@ -1,0 +1,46 @@
+# Rosé Pine Moon — github.com/rose-pine/palette (MIT); see NOTICE.md. The
+# palette's sixteen terminal colours and its ground: every role the shipped
+# `terminal` theme paints is drawn in them. Its bright slots repeat its
+# colours, and its six accents are spoken for — pine, gold and love are the
+# verdict, iris a withheld value — so the decision pane's expansions take
+# its subtle grey, and its numbers and constants its rose.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"decision.variable.special" = "subtle"
+"decision.tag" = "subtle"
+"decision.number" = "rose"
+"decision.constant" = "rose"
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "foam", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#232136"
+text = "#e0def4"
+comment = "#6e6a86"
+subtle = "#908caa"
+surface = "#44415a"
+rose = "#ea9a97"
+foam = "#9ccfd8"
+black = "#393552"
+red = "#eb6f92"
+green = "#3e8fb0"
+yellow = "#f6c177"
+blue = "#9ccfd8"
+magenta = "#c4a7e7"
+cyan = "#ea9a97"
+white = "#e0def4"
+bright-black = "#6e6a86"
+bright-red = "#eb6f92"
+bright-green = "#3e8fb0"
+bright-yellow = "#f6c177"
+bright-blue = "#9ccfd8"
+bright-magenta = "#c4a7e7"
+bright-cyan = "#ea9a97"
+bright-white = "#e0def4"

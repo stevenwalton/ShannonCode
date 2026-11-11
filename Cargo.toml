@@ -1,0 +1,156 @@
+# Shannon Code — workspace root.
+#
+# The TUI binary (`shannon`) lives in `crates/shannon-tui`; the orchestrator
+# library — currently a placeholder — lives in `crates/shannon-core`. The
+# split exists so the TUI consumes the core through a stable surface and we
+# can swap implementations (or expose a non-TUI frontend) without rewiring
+# the world. See `docs/DesignDocs/design.md` §0.4 (Rust) and §1.3.1
+# (Store trait, swappable backend) for the why.
+
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.88"
+# **The oldest rustc that builds us, and why that one** (Steven, 11-03: a
+# distro's 1.94 was refused by a 1.95 floor nothing needed — it was written
+# at bootstrap and never measured). 1.88 is ratatui 0.30's own floor and the
+# release that made let chains stable, which edition 2024 code here uses
+# throughout; nothing below it is reachable. Clippy reads this line as its
+# MSRV, so `-D warnings` refuses a std API stabilised later
+# (`incompatible_msrv`), but no lint sees a LANGUAGE feature (an if-let
+# guard was the other thing past it): only a build on that toolchain does,
+# so `rust-toolchain.toml` pins it.
+# **One version for the workspace**, inherited by both crates, so a bump is one
+# edit and the two can never drift. Still `0.x` because this is alpha and the
+# config/command surface may break. **When to bump** (the rule said only what
+# the number meant, and sat at 0.3 for two months — Steven, 10-16):
+# - MINOR is the milestone the docket marks IN PROGRESS (the development
+#   repository's `docs/Milestones/TODO.md`; the lowest, when two run at
+#   once): bumped in the commit that opens it.
+# - PATCH counts review stops: bumped in the commit that closes one.
+# `view.rs`'s banner, the log header and `--version` read `CARGO_PKG_VERSION`,
+# so none can disagree with this line.
+version = "0.4.17"
+# MIT (Steven, 11-05); `LICENSE` at the root holds the text.
+license = "MIT"
+
+# Doc links are a quality gate we already closed once (2026-07-14, at zero) and
+# then let drift back to seven warnings, because `cargo doc` was only ever run
+# *at* the gate. Denying turns those warnings into a build failure so they can't
+# accumulate unnoticed — but note what it does NOT do: `rustdoc::*` is a
+# rustdoc-only tool lint, so `cargo check`/`clippy` still pass with a broken
+# link (verified by canary). The run itself is the other half of the gate, so
+# `cargo doc --no-deps --workspace` is now part of the bar in AGENTS.md.
+#
+# `broken_intra_doc_links` catches a link to something that does not exist
+# (including our `[[memory-name]]` convention, which is prose and must be
+# backticked, not linked). `private_intra_doc_links` catches a *public* doc
+# linking to a private item — the link would 404 for a reader of the rendered
+# docs. Both were in the seven.
+[workspace.lints.rustdoc]
+broken_intra_doc_links = "deny"
+private_intra_doc_links = "deny"
+
+[workspace.dependencies]
+anyhow = "1"
+# OSC 52 clipboard payloads are base64; encode-only, but the crate is
+# already in the tree (via the core crate's TLS stack) so it's free to wire.
+base64 = "0.22"
+# Content-addressing for conversation Turns (design.md §1), and a file's stamp
+# on each Read. `pure` drops the C and assembly backends (no `cc` build step),
+# matching the no-C posture of `rustls-tls`: x86-64 keeps the Rust SIMD
+# intrinsics, aarch64 runs the portable code, its NEON being C (blake3 1.8.5's
+# `build.rs`). Neither is a hot loop, so that is fine.
+blake3 = { version = "1", features = ["pure"] }
+# Benchmarks only. default-features off drops the HTML/plotters + rayon
+# surface; the `cargo_bench_support` feature keeps the CLI timing output,
+# which is all the baseline + regression numbers need.
+criterion = { version = "0.5", default-features = false, features = ["cargo_bench_support"] }
+crossterm = { version = "0.29", features = ["event-stream"] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+proptest = "1"
+ratatui = "0.30"
+# `re:` permission rules (Steven, 2026-10-03: an advanced feature). The
+# rust-lang crate, already in the tree through `fancy-regex` and `criterion`,
+# so no new crate is built. Chosen for its guarantee as much as its syntax:
+# matching is linear in the input, with no backtracking, so a rule's pattern
+# cannot hang the gate on a hostile command line.
+regex = "1"
+# `regex`'s own engine, by the same author, already built into the tree with
+# exactly these features (Steven approved, 2026-10-03). What `regex` does not
+# expose: a DFA to walk, to ask whether ANY path a command's glob could expand
+# to matches a `[secrets] paths` regex (`pattern::PathRe::could_name`).
+regex-automata = { version = "0.4", default-features = false, features = ["std", "syntax", "dfa-build", "dfa-search"] }
+reqwest ={ version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Throwaway dirs for the JsonlStore contract tests — never touch the real XDG
+# state dir from a test. Dev-only (test fixtures), so it stays out of release.
+tempfile = "3"
+thiserror = "2"
+# `signal`: SIGHUP/SIGTERM close Shannon from outside, and must stop what it
+# started on the way (`exit_signal.rs`). No new crate: `signal-hook-registry`
+# is already in the tree through crossterm.
+# `net`: the unix socket a `claude -p` turn's PreToolUse hook asks Shannon
+# through (`backend::claude_code`). A feature of tokio, no new crate.
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "process", "io-util", "signal", "net"] }
+tokio-stream = "0.1"
+# Process-group signalling: killing a timed-out command must reach every stage
+# of a pipeline, not just the shell we spawned.
+libc = "0.2"
+toml = "0.8"
+# Setup writes ONE key of your config file (`[tui] model`) and must leave the
+# rest — comments, order, spacing — as you wrote it; `toml` re-serialises the
+# whole document. The format-preserving parser `toml` itself is built on, so
+# already in the tree at this version: no new crate.
+toml_edit = "0.22"
+tracing = "0.1"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+unicode-width = "0.2"
+
+# Build-loop hygiene. Both settings exist to stop `target/debug/deps/` growing
+# without bound, which is a *compile-speed* problem long before it is a disk one.
+#
+# macOS defaults the dev profile to `split-debuginfo = "unpacked"`: the debug
+# info is left in the per-codegen-unit `.rcgu.o` files and the executable keeps
+# a debug map pointing at them, so those objects must be RETAINED. Cargo never
+# garbage-collects `deps/`, and every rebuild writes a fresh hash-suffixed set —
+# measured at ~333 new files per touch of one crate, at the default
+# `codegen-units = 256`, across lib/bin/test/bench targets.
+#
+# The cost is not the disk. Cargo passes `-L dependency=<...>/deps` to every
+# rustc invocation, and `rustc_session::search_paths::SearchPath::new` reads and
+# SORTS that whole directory before compiling a line. So the penalty is paid per
+# invocation and is completely independent of what you actually changed. By
+# 2026-08-06 the directory held 796,312 stale `.o` files and merely listing it
+# took 7.8s; `cargo check` on one crate had reached 14.5s at 20% CPU (i.e.
+# blocked on `readdir`, not compiling), and a full `cargo test` spent minutes
+# doing nothing else. That is what "startup got slow" actually was.
+#
+# `packed` makes rustc run `dsymutil` into a single `.dSYM` bundle and DELETE the
+# objects, so `deps/` stays bounded — verified at zero growth across a full
+# `cargo test --no-run`. `line-tables-only` then makes that dsymutil run cheap
+# while still resolving `file:line` on every backtrace frame (verified against a
+# real panic, not assumed) — the measured incremental rebuild is 1.5s, faster
+# than the stock `unpacked` build even with an empty `deps/`.
+#
+# The one thing given up is variable inspection in lldb, which needs full DWARF.
+# If you want to step through with a debugger, set `debug = 2` here; it costs
+# about 2s per link and changes nothing else.
+[profile.dev]
+split-debuginfo = "packed"
+debug = "line-tables-only"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+# Strip symbols from the shipped binary — a TUI wants to be small to download
+# and quick to map into memory. We keep `opt-level = 3` (the default) for the
+# thousands-of-FPS render ambition rather than trading speed for `opt-level=z`,
+# and we deliberately do NOT set `panic = "abort"`: the terminal is restored by
+# RAII `Drop` on unwind, so aborting would leave a broken terminal on a panic.
+strip = true

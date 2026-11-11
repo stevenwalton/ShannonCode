@@ -1,0 +1,17 @@
+# sudo — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "sudo"
+effect = "exec"
+trust = "generated"
+privilege = true
+family = { bundling = true }
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+  { names = ["-u", "--user"], arity = 1 },
+  { names = ["-g", "--group"], arity = 1 },
+  { names = ["-E", "--preserve-env"] },
+  { names = ["-i", "--login"] },
+  { names = ["-s", "--shell"] },
+  { names = ["-n", "--non-interactive"] },
+]

@@ -1,0 +1,18 @@
+# rm — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09), then verified by hand: its operands are the files
+# it DELETES (the registry had no operand roles, so every operand read as
+# a file read). `--no-preserve-root` turns `rm -rf /` from a protected
+# no-op into a catastrophe — the one shipped deny.
+
+name = "rm"
+effect = "delete"
+trust = "generated"
+# GNU: an unambiguous prefix of a long option is the option (`--no /`).
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "delete_file" }]
+flag = [
+  { names = ["-r", "-R", "--recursive"] },
+  { names = ["-f", "--force"] },
+  { names = ["-i", "-I", "--interactive"] },
+  { names = ["--no-preserve-root"], effect = "delete" },
+]

@@ -1,0 +1,23 @@
+*.sw?
+.DS_Store
+*.api
+# The export's specific forbidden strings: never committed (tools/publish).
+forbidden.local
+
+# Rust / cargo
+/target/
+# A probe that is its own workspace builds its own target.
+/tools/probe/storeproto/target/
+
+# Reviewer subagents get their own worktrees under here; they are scratch,
+# and one of them got committed once.
+.claude/worktrees/
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Python bytecode from tools/drive
+__pycache__/
+*.pyc
+
+# Source Images
+assets/images/original/

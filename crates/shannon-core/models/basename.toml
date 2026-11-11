@@ -1,0 +1,13 @@
+# basename — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "basename"
+effect = "read"
+trust = "generated"
+family = { bundling = true }
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-a", "--multiple"] },
+  { names = ["-s", "--suffix"], arity = 1 },
+  { names = ["-z", "--zero"] },
+]

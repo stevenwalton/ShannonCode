@@ -1,0 +1,10 @@
+# alias — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "alias"
+effect = "read"
+trust = "generated"
+family = { bundling = false }
+positional = [{ at = "rest", role = "data" }]
+flag = [
+]

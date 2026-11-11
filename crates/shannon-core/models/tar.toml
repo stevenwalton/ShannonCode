@@ -1,0 +1,61 @@
+# tar — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "tar"
+# A read (`-t` lists, `-d` compares); the modes that write raise it — `-x`,
+# `-r`, `-u`, `-A` by their marks, `-c` by its switch — so a list rides
+# its harmless flags and a write names its mode (Steven, 10-10).
+effect = "read"
+trust = "generated"
+# GNU getopt_long: a long option abbreviates. `-c`/`-r`/`-u`/`-A` make the
+# archive `-f` names a file WRITTEN (the switch); `-x` writes the extracted
+# members where it runs, or under `-C`.
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "read_file" }]
+# `on = "file"`: the archive `-f` names is written; the members stay reads
+# (review 2026-10-10, E1: without `on`, the members flipped instead).
+switch = [
+  { when = "create", from = "read_file", to = "write_file", on = "file" },
+  { when = "append", from = "read_file", to = "write_file", on = "file" },
+  { when = "update", from = "read_file", to = "write_file", on = "file" },
+  { when = "concatenate", from = "read_file", to = "write_file", on = "file" },
+]
+flag = [
+  { names = ["-f", "--file"], arity = 1, role = "read_file" },
+  { names = ["-c", "--create"] },
+  { names = ["-r", "--append"], effect = "write" },
+  { names = ["-u", "--update"], effect = "write" },
+  { names = ["-A", "--catenate", "--concatenate"], canon = "concatenate", effect = "write" },
+  # `-x` writes the members where it runs — files no word names, so no
+  # switch says it; the flag carries it, and never rides unnamed (`-c`'s
+  # write is derived from its switch).
+  { names = ["-x", "--extract", "--get"], canon = "extract", effect = "write" },
+  { names = ["-d", "--diff", "--compare"], canon = "diff" },
+  { names = ["-v", "--verbose"] },
+  { names = ["-t", "--list"] },
+  { names = ["-z", "--gzip", "--gunzip", "--ungzip"], canon = "gzip" },
+  { names = ["-j", "--bzip2"] },
+  { names = ["-J", "--xz"] },
+  { names = ["-a", "--auto-compress"] },
+  { names = ["-O", "--to-stdout"] },
+  { names = ["-p", "--preserve-permissions", "--same-permissions"], canon = "preserve-permissions" },
+  { names = ["-P", "--absolute-names"], benign = false, why = "`-P` keeps leading `/` and `..` in member names: an extract may write anywhere" },
+  { names = ["-h", "--dereference"] },
+  { names = ["-k", "--keep-old-files"] },
+  { names = ["--overwrite"] },
+  { names = ["--no-recursion"] },
+  { names = ["--one-file-system"] },
+  { names = ["-m", "--touch"] },
+  { names = ["--numeric-owner"] },
+  { names = ["--strip-components"], arity = 1, role = "number" },
+  { names = ["--exclude"], arity = 1, role = "pattern" },
+  { names = ["--exclude-vcs"] },
+  { names = ["--transform", "--xform"], canon = "transform", arity = 1, role = "data" },
+  { names = ["-C", "--directory"], arity = 1, role = "dir", chdir = true },
+  { names = ["-T", "--files-from"], arity = 1, role = "read_file", benign = false, why = "`-T` reads the member list from a file: names the gate never sees" },
+  { names = ["-X", "--exclude-from"], arity = 1, role = "read_file" },
+  { names = ["--index-file"], arity = 1, role = "write_file" },
+  { names = ["--checkpoint-action"], arity = 1, role = "program", effect = "exec" },
+  { names = ["--to-command"], arity = 1, role = "program", effect = "exec" },
+  { names = ["-I", "--use-compress-program"], canon = "use-compress-program", arity = 1, role = "program", effect = "exec" },
+]

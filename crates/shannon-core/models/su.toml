@@ -1,0 +1,17 @@
+# su — switch user: a privilege wrapper, a hard ask whatever a rule allows;
+# a user's `deny su` refuses it. `su -c CMD` runs CMD as the user; a bare
+# `su` opens a shell. Modelled so it reaches the privilege check by its
+# model, not by being unmodelled.
+
+name = "su"
+effect = "exec"
+trust = "generated"
+privilege = true
+family = { bundling = true }
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+  { names = ["-c", "--command"], arity = 1, role = "code" },
+  { names = ["-l", "--login"] },
+  { names = ["-s", "--shell"], arity = 1, role = "program" },
+  { names = ["-m", "-p", "--preserve-environment"] },
+]

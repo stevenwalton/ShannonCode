@@ -1,0 +1,64 @@
+[package]
+name = "shannon-tui"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "shannon"
+path = "src/main.rs"
+
+# Baseline for the M2 wrap/style cache work: captures the current
+# per-frame re-wrap cost (Output::visible_window) *before* the Output ->
+# Block refactor replaces it, so we have an honest before/after. Run with
+# `cargo bench -p shannon-tui`.
+[[bench]]
+name = "output_wrap"
+harness = false
+
+[dependencies]
+anyhow = { workspace = true }
+base64 = { workspace = true }
+# A history's digest that is the same in every build — the key the Claude
+# Code sessions Shannon started are kept under across runs
+# (`claude_sessions`). Already built into the tree through the core crate,
+# which addresses turns with it.
+blake3 = { workspace = true }
+crossterm = { workspace = true }
+futures-util = { workspace = true }
+ratatui = { workspace = true }
+# `/` and `?` patterns (`search`): the dialect the gate's `re:` rules speak.
+# Already built into the tree through the core crate.
+regex = { workspace = true }
+shannon-core = { path = "../shannon-core" }
+# A `claude -p` turn's tool calls arrive as JSON input (`StreamMsg::ToolAsk`),
+# and the input Shannon hands back after an edit is JSON too. Already built
+# into the tree through the core crate.
+serde_json = { workspace = true }
+toml_edit = { workspace = true }
+# The table a running setting is set through (`ConfigStack::set`, as `:set`
+# does) — setup sets `[tui] model` that way after writing it to the file.
+toml = { workspace = true }
+# Syntax highlighting for fenced code blocks. `default-fancy` swaps the onig C
+# regex engine for pure-Rust `fancy-regex` — no C toolchain, cleaner build —
+# while keeping the bundled default syntaxes + themes.
+syntect = { version = "5", default-features = false, features = ["default-fancy"] }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+tracing = { workspace = true }
+tracing-appender = { workspace = true }
+tracing-subscriber = { workspace = true }
+unicode-width = { workspace = true }
+
+[dev-dependencies]
+# The same crate, with its test doubles switched on — the standard way to make
+# `HangingBackend`/`RecordingStub`/`FailingStore` reachable from this crate's
+# tests without shipping them in the binary.
+shannon-core = { path = "../shannon-core", features = ["test-util"] }
+criterion = { workspace = true }
+proptest = { workspace = true }
+tempfile = { workspace = true }

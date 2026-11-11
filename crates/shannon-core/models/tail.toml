@@ -1,0 +1,20 @@
+# tail — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "tail"
+effect = "read"
+trust = "generated"
+family = { bundling = true, long_abbrev = true, numeric_option = "lines" }
+positional = [{ at = "rest", role = "read_file" }]
+flag = [
+  { names = ["-n", "--lines"], arity = 1 },
+  { names = ["-c", "--bytes"], arity = 1 },
+  { names = ["-f", "--follow"] },
+  { names = ["-F"], canon = "follow-retry" },
+  { names = ["--retry"] },
+  { names = ["-s", "--sleep-interval"], arity = 1 },
+  { names = ["--pid"], arity = 1 },
+  { names = ["-q", "--quiet", "--silent"] },
+  { names = ["-v", "--verbose"] },
+  { names = ["-z", "--zero-terminated"] },
+]

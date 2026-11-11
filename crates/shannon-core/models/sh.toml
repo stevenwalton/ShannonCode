@@ -1,0 +1,12 @@
+# sh — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "sh"
+effect = "exec"
+trust = "generated"
+family = { bundling = true }
+# The script operand is RUN, not read: a fence on code there meets it.
+positional = [{ at = 0, role = "exec_file" }, { at = "rest", role = "data" }]
+flag = [
+  { names = ["-c"], canon = "command", arity = 1, role = "code", effect = "exec" },
+]

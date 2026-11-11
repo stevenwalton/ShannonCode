@@ -1,0 +1,15 @@
+# wc — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "wc"
+effect = "read"
+trust = "generated"
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "read_file" }]
+flag = [
+  { names = ["-l", "--lines"] },
+  { names = ["-w", "--words"] },
+  { names = ["-c", "--bytes"] },
+  { names = ["-m", "--chars"] },
+  { names = ["-L", "--max-line-length"] },
+]

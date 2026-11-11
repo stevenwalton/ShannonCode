@@ -1,0 +1,40 @@
+# awk — a read of the files it is given, under a program that is a
+# language: `system()`, `@load` and a pipe run code, `>` writes a file,
+# `getline <` reads one. The program is read by the awk language reader
+# (`permission::model::lang::awk`); the model says which word it is.
+#
+# BWK awk (`/usr/bin/awk` here): options come before the program, and an
+# option it does not know is IGNORED — so an unknown flag here is unknown
+# to the model, never benign (`--sandbox` is gawk's, and BWK silently drops
+# it; research §7.4).
+
+name = "awk"
+effect = "read"
+trust = "verified"
+implementation = "bwk"
+language = "awk"
+# Interspersed, as sed's model is: a dashed word after the program text is
+# a flag (gawk permutes; BWK does not, and reads it as a file, which this
+# reading only asks about more).
+family = { bundling = false, interspersed = true }
+examples.match = [
+  "awk '{print $1}' data.txt",
+  "awk -F: '{print $1}' /etc/passwd",
+  "awk -v n=3 'NR<=n' f",
+  "awk -f prog.awk f",
+]
+examples.not_match = ["awk --sandbox '{print}' f"]
+
+positional = [
+  { at = 0, role = "code", unless = ["f"] },
+  { at = "rest", role = "read_file" },
+]
+
+flag = [
+  { names = ["-F"], arity = 1, role = "data" },
+  { names = ["-v"], arity = 1, role = "kv" },
+  # The program, from a file: code no reader sees, run as a script is
+  # (`bash x.sh`) — it was a read, and ran unasked (10-13).
+  { names = ["-f"], arity = 1, role = "exec_file" },
+  { names = ["--version", "-version"], canon = "version" },
+]

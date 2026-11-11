@@ -1,0 +1,28 @@
+# python3 — a code runner. `-c CODE` runs code the model does not read;
+# `-m MODULE` runs a module; a script operand is an exec of that file; `-`
+# is code from the input (a heredoc), read as a file named `-` where the
+# command runs, which asks as an exec would. Nothing here is a read.
+
+name = "python3"
+effect = "exec"
+trust = "verified"
+family = { bundling = false, interspersed = false }
+examples.match = ["python3 script.py", "python3 -c 'print(1)'", "python3 -m pytest tests/", "python3 - <<'EOF'\nprint(1)\nEOF"]
+examples.not_match = ["python3 --frob script.py"]
+
+positional = [
+  { at = 0, role = "exec_file", unless = ["command", "module"] },
+  { at = "rest", role = "data" },
+]
+
+flag = [
+  { names = ["-c"], canon = "command", arity = 1, role = "code", effect = "exec" },
+  { names = ["-m"], canon = "module", arity = 1, role = "data", effect = "exec" },
+  { names = ["-I"] }, { names = ["-u"] }, { names = ["-B"] }, { names = ["-q"] },
+  { names = ["-E"] }, { names = ["-s"] }, { names = ["-S"] }, { names = ["-O"] }, { names = ["-OO"] },
+  { names = ["-b"] }, { names = ["-d"] }, { names = ["-i"] }, { names = ["-v"] }, { names = ["-x"] },
+  { names = ["-W"], arity = 1, role = "data" },
+  { names = ["-X"], arity = 1, role = "data" },
+  { names = ["-V", "--version"], canon = "version" },
+  { names = ["-h", "--help"], canon = "help" },
+]

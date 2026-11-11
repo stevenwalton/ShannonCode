@@ -1,0 +1,21 @@
+# doas — OpenBSD's privilege wrapper. Generated from the registry
+# `shell::program::PROGRAMS` (P1 of the rebuild, 2026-10-09); flags added
+# 2026-10-11 from doas(1) as recalled, not checked against a binary on this
+# machine, so an allow can name them (`allow doas -u=www ls *`; Steven,
+# 10-11). A flag missing here is unknown and lifts nothing. `-s` hands the
+# command to a shell: no rule lifts it (`acts::PRIVILEGE_WRAPPERS`).
+
+name = "doas"
+effect = "exec"
+trust = "generated"
+privilege = true
+family = { bundling = true }
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+  { names = ["-u"], arity = 1 },
+  { names = ["-n"] },
+  { names = ["-s"] },
+  { names = ["-L"] },
+  { names = ["-a"], arity = 1 },
+  { names = ["-C"], arity = 1, role = "read_file" },
+]

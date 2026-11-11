@@ -1,0 +1,46 @@
+# Catppuccin Latte — github.com/catppuccin/palette (MIT); see NOTICE.md.
+# The palette's sixteen terminal colours and its ground: every role the
+# shipped `terminal` theme paints is drawn in them. A light theme: its
+# "white" slots are light, so the roles the shipped theme paints white —
+# text, the status row, a command's name — are its text instead.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.text" = "text"
+"ui.statusline" = "text"
+"ui.text.quiet" = "subtext"
+"ui.muted" = "subtext"
+"ui.border" = "subtext"
+"decision.operator" = "subtext"
+"decision.function.call" = { fg = "text", bold = true }
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#eff1f5"
+text = "#4c4f69"
+subtext = "#6c6f85"
+comment = "#7c7f93"
+surface = "#bcc0cc"
+black = "#5c5f77"
+red = "#d20f39"
+green = "#40a02b"
+yellow = "#df8e1d"
+blue = "#1e66f5"
+magenta = "#ea76cb"
+cyan = "#179299"
+white = "#acb0be"
+bright-black = "#6c6f85"
+bright-red = "#de293e"
+bright-green = "#49af3d"
+bright-yellow = "#eea02d"
+bright-blue = "#456eff"
+bright-magenta = "#fe85d8"
+bright-cyan = "#2d9fa8"
+bright-white = "#bcc0cc"

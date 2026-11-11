@@ -1,0 +1,13 @@
+# echo — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "echo"
+effect = "read"
+trust = "generated"
+family = { bundling = true, dash_data = true }
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-n"], canon = "no-newline" },
+  { names = ["-e"], canon = "escapes" },
+  { names = ["-E"], canon = "no-escapes" },
+]

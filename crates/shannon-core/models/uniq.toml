@@ -1,0 +1,19 @@
+# uniq — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "uniq"
+effect = "read"
+trust = "generated"
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "read_file" }, { at = 1, role = "write_file" }]
+flag = [
+  { names = ["-c", "--count"] },
+  { names = ["-d", "--repeated"] },
+  { names = ["-D", "--all-repeated"] },
+  { names = ["-u", "--unique"] },
+  { names = ["-i", "--ignore-case"] },
+  { names = ["-z", "--zero-terminated"] },
+  { names = ["-f", "--skip-fields"], arity = 1 },
+  { names = ["-s", "--skip-chars"], arity = 1 },
+  { names = ["-w", "--check-chars"], arity = 1 },
+]

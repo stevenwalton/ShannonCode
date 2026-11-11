@@ -1,0 +1,26 @@
+# python — the same runner as python3 (`models/python3.toml`), under the
+# name a system may still give it. A code runner: nothing here is a read.
+
+name = "python"
+effect = "exec"
+trust = "verified"
+family = { bundling = false, interspersed = false }
+examples.match = ["python script.py", "python -c 'print(1)'", "python -m venv .venv"]
+examples.not_match = ["python --frob script.py"]
+
+positional = [
+  { at = 0, role = "exec_file", unless = ["command", "module"] },
+  { at = "rest", role = "data" },
+]
+
+flag = [
+  { names = ["-c"], canon = "command", arity = 1, role = "code", effect = "exec" },
+  { names = ["-m"], canon = "module", arity = 1, role = "data", effect = "exec" },
+  { names = ["-I"] }, { names = ["-u"] }, { names = ["-B"] }, { names = ["-q"] },
+  { names = ["-E"] }, { names = ["-s"] }, { names = ["-S"] }, { names = ["-O"] }, { names = ["-OO"] },
+  { names = ["-b"] }, { names = ["-d"] }, { names = ["-i"] }, { names = ["-v"] }, { names = ["-x"] },
+  { names = ["-W"], arity = 1, role = "data" },
+  { names = ["-X"], arity = 1, role = "data" },
+  { names = ["-V", "--version"], canon = "version" },
+  { names = ["-h", "--help"], canon = "help" },
+]

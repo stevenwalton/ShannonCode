@@ -1,0 +1,223 @@
+# cargo — `build`, `check`, `clippy`, `doc`, `test`, `run`, `bench` and
+# `install` run build scripts, proc macros and the project's own code: an
+# exec of the project, which asks until `allow cargo *` (the replay, design
+# §8.7: this user approved 23 of them). `fmt` rewrites the sources in place
+# (a write inside); `add`, `remove` and `update` write the manifest and the
+# lock; `clean` deletes `target/`; `metadata`, `tree`, `search`, `version`
+# read. An unknown first word runs `cargo-<word>`, an installed subcommand.
+
+name = "cargo"
+# Acts on the project where it runs: `cd /tmp && cargo build` reads /tmp.
+reads_here = true
+effect = "read"
+trust = "verified"
+external = true
+family = { bundling = true, interspersed = true }
+examples.match = [
+  "cargo build -p shannon-tui --tests",
+  "cargo test -p shannon-core acceptance -- --nocapture",
+  "cargo clippy --all-targets -- -D warnings",
+  "cargo fmt --all -- --check",
+  "cargo doc --no-deps --workspace",
+]
+examples.not_match = ["cargo build --frob"]
+
+flag = [
+  { names = ["-q", "--quiet"] }, { names = ["-v", "--verbose"] },
+  { names = ["--color"], arity = 1, role = "enum" },
+  { names = ["--manifest-path"], arity = 1, role = "read_file" },
+  { names = ["-p", "--package"], arity = 1, role = "data" },
+  { names = ["--workspace"] }, { names = ["--all"] },
+  { names = ["--exclude"], arity = 1, role = "data" },
+  { names = ["--locked"] }, { names = ["--frozen"] }, { names = ["--offline"] },
+  { names = ["-j", "--jobs"], arity = 1, role = "number" },
+  { names = ["--config"], arity = 1, role = "kv" },
+  { names = ["-Z"], arity = 1, role = "data" },
+  { names = ["-V", "--version"] }, { names = ["-h", "--help"] }, { names = ["--list"] },
+]
+
+[command.build]
+aliases = ["b"]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--release", "-r"], canon = "release" }, { names = ["--profile"], arity = 1, role = "data" },
+  { names = ["--lib"] }, { names = ["--bins"] }, { names = ["--bin"], arity = 1, role = "data" },
+  { names = ["--tests"] }, { names = ["--test"], arity = 1, role = "data" },
+  { names = ["--examples"] }, { names = ["--example"], arity = 1, role = "data" },
+  { names = ["--benches"] }, { names = ["--all-targets"] },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--all-features"] }, { names = ["--no-default-features"] },
+  { names = ["--target"], arity = 1, role = "data" },
+  { names = ["--target-dir"], arity = 1, role = "write_file" },
+  { names = ["--timings"], arity = "optional_attached", role = "data" },
+]
+
+[command.check]
+aliases = ["c"]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--release", "-r"], canon = "release" }, { names = ["--profile"], arity = 1, role = "data" },
+  { names = ["--lib"] }, { names = ["--bins"] }, { names = ["--bin"], arity = 1, role = "data" },
+  { names = ["--tests"] }, { names = ["--examples"] }, { names = ["--benches"] }, { names = ["--all-targets"] },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--all-features"] }, { names = ["--no-default-features"] },
+  { names = ["--target"], arity = 1, role = "data" },
+]
+
+[command.clippy]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--release", "-r"], canon = "release" },
+  { names = ["--lib"] }, { names = ["--bins"] }, { names = ["--tests"] }, { names = ["--examples"] }, { names = ["--all-targets"] },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--all-features"] }, { names = ["--no-default-features"] },
+  { names = ["--fix"], effect = "write" }, { names = ["--allow-dirty"] }, { names = ["--allow-staged"] },
+  { names = ["--no-deps"] },
+]
+
+[command.doc]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--no-deps"] }, { names = ["--document-private-items"] }, { names = ["--open"], role = "program", effect = "exec" },
+  { names = ["--lib"] }, { names = ["--bins"] }, { names = ["--examples"] },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--all-features"] }, { names = ["--no-default-features"] },
+  { names = ["--release", "-r"], canon = "release" },
+]
+
+[command.test]
+aliases = ["t"]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--release", "-r"], canon = "release" }, { names = ["--profile"], arity = 1, role = "data" },
+  { names = ["--lib"] }, { names = ["--bins"] }, { names = ["--bin"], arity = 1, role = "data" },
+  { names = ["--tests"] }, { names = ["--test"], arity = 1, role = "data" },
+  { names = ["--examples"] }, { names = ["--example"], arity = 1, role = "data" },
+  { names = ["--benches"] }, { names = ["--all-targets"] }, { names = ["--doc"] },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--all-features"] }, { names = ["--no-default-features"] },
+  { names = ["--no-run"] }, { names = ["--no-fail-fast"] },
+  { names = ["--target"], arity = 1, role = "data" },
+]
+
+[command.run]
+aliases = ["r"]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--release", "-r"], canon = "release" }, { names = ["--profile"], arity = 1, role = "data" },
+  { names = ["--bin"], arity = 1, role = "data" }, { names = ["--example"], arity = 1, role = "data" },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--all-features"] }, { names = ["--no-default-features"] },
+]
+
+[command.bench]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--bench"], arity = 1, role = "data" }, { names = ["--benches"] }, { names = ["--no-run"] }, { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" }]
+
+[command.install]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--path"], arity = 1, role = "dir" }, { names = ["--git"], arity = 1, role = "url" },
+  { names = ["--root"], arity = 1, role = "write_file" }, { names = ["--force", "-f"], canon = "force" },
+  { names = ["--version"], arity = 1, role = "data" }, { names = ["--locked"] },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+]
+
+[command.uninstall]
+effect = "delete"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--root"], arity = 1, role = "dir" }, { names = ["--bin"], arity = 1, role = "data" }]
+
+[command.fmt]
+effect = "write"
+writes = ["."]
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--all"] }, { names = ["--check"] }, { names = ["--manifest-path"], arity = 1, role = "read_file" }, { names = ["-p", "--package"], arity = 1, role = "data" }]
+
+[command.add]
+effect = "write"
+writes = ["Cargo.toml", "Cargo.lock"]
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--dev"] }, { names = ["--build"] }, { names = ["--optional"] }, { names = ["--no-default-features"] },
+  { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--path"], arity = 1, role = "dir" }, { names = ["--git"], arity = 1, role = "url" },
+  { names = ["--rename"], arity = 1, role = "data" }, { names = ["--dry-run"] },
+]
+
+[command.remove]
+aliases = ["rm"]
+effect = "write"
+writes = ["Cargo.toml", "Cargo.lock"]
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--dev"] }, { names = ["--build"] }, { names = ["--dry-run"] }]
+
+[command.update]
+effect = "write"
+writes = ["Cargo.lock"]
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--dry-run"] }, { names = ["--precise"], arity = 1, role = "data" }, { names = ["-w", "--workspace"] }, { names = ["--aggressive"] }]
+
+[command.clean]
+effect = "delete"
+flag = [{ names = ["--release", "-r"], canon = "release" }, { names = ["--doc"] }, { names = ["--target-dir"], arity = 1, role = "delete_file" }, { names = ["--profile"], arity = 1, role = "data" }, { names = ["-n", "--dry-run"] }]
+
+[command.metadata]
+effect = "read"
+flag = [{ names = ["--no-deps"] }, { names = ["--format-version"], arity = 1, role = "number" }, { names = ["--filter-platform"], arity = 1, role = "data" }]
+
+[command.tree]
+effect = "read"
+flag = [
+  { names = ["-i", "--invert"], arity = 1, role = "data" }, { names = ["-e", "--edges"], arity = 1, role = "data" },
+  { names = ["--depth"], arity = 1, role = "data" }, { names = ["-d", "--duplicates"] }, { names = ["--prefix"], arity = 1, role = "enum" },
+  { names = ["-f", "--format"], arity = 1, role = "data" }, { names = ["--features", "-F"], canon = "features", arity = 1, role = "data" },
+  { names = ["--all-features"] }, { names = ["--no-default-features"] }, { names = ["--target"], arity = 1, role = "data" },
+]
+
+[command.search]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--limit"], arity = 1, role = "number" }, { names = ["--registry"], arity = 1, role = "data" }]
+
+[command.version]
+effect = "read"
+
+[command.generate-lockfile]
+effect = "write"
+writes = ["Cargo.lock"]
+
+[command.vendor]
+effect = "write"
+positional = [{ at = 0, role = "write_file" }]
+flag = [{ names = ["--versioned-dirs"] }, { names = ["--no-delete"] }, { names = ["-s", "--sync"], arity = 1, role = "read_file" }]
+
+[command.publish]
+effect = "write"
+flag = [{ names = ["--dry-run"] }, { names = ["--allow-dirty"] }, { names = ["--no-verify"] }, { names = ["--registry"], arity = 1, role = "data" }, { names = ["--token"], arity = 1, role = "data" }]
+
+[command.package]
+effect = "exec"
+flag = [{ names = ["--list", "-l"], canon = "list" }, { names = ["--no-verify"] }, { names = ["--allow-dirty"] }]
+
+[command.new]
+effect = "write"
+positional = [{ at = 0, role = "write_file" }]
+flag = [{ names = ["--lib"] }, { names = ["--bin"] }, { names = ["--name"], arity = 1, role = "data" }, { names = ["--vcs"], arity = 1, role = "enum" }, { names = ["--edition"], arity = 1, role = "data" }]
+
+[command.init]
+effect = "write"
+positional = [{ at = 0, role = "write_file" }]
+flag = [{ names = ["--lib"] }, { names = ["--bin"] }, { names = ["--name"], arity = 1, role = "data" }, { names = ["--vcs"], arity = 1, role = "enum" }, { names = ["--edition"], arity = 1, role = "data" }]
+
+[command.mutants]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]

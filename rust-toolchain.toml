@@ -1,0 +1,8 @@
+# **The floor, so every build here checks it** (Steven, 11-08: "pin the lowest
+# requirement, not the one we have"): the `rust-version` of the root Cargo.toml,
+# held equal by `the_pinned_toolchain_is_the_declared_floor`. A distribution's
+# own cargo ignores this file and builds on its newer rustc, which checks the
+# other end; no lint is lost between them.
+[toolchain]
+channel = "1.88.0"
+components = ["rustfmt", "clippy"]

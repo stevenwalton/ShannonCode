@@ -1,0 +1,11 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc cd86abe7b4d447f8d6dc767dbe008c79f37ed6812911d7c60a4515213bc0f6d8 # shrinks to actions = [ReplaceChars { with: 'a', count: 1 }], k = 0
+cc 717d755e79ded38c95980437510c168b3dd36a328d80f8b0d50180d77ef0a8b7 # shrinks to actions = [ReplaceChars { with: 'a', count: 1 }]
+cc 70ce9496ab02a98a1c0e07d198262055a347aabc9311f34e5568a9b18473c4a2 # shrinks to actions = [ReplaceBack, DeleteWordBack], k = 0
+cc 86245cd1a92c9d38b74d73f25924267bdb55c9c32731d1af55f93158fb0c7551 # shrinks to actions = [ReplaceBack]
+cc ca0b15e6bc94f4b5324d21a9c6d7c2d4da4c4b23755b3eea264e7ac6d84e75a2 # shrinks to steps = [Edit(Insert('a')), Edit(Insert('a')), Edit(ReplaceType('\n')), Edit(SetAnchor), Op(Delete, TextObject { scope: Inner, object: Word }, 1)]

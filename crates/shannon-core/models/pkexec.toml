@@ -1,0 +1,17 @@
+# pkexec — polkit's privilege wrapper: runs the command as another user
+# (root by default). A privilege wrapper is a hard ask whatever a rule
+# allows; a user's `deny pkexec` refuses it. Modelled so it reaches the
+# privilege check by its model, not by being unmodelled (which asks by
+# accident and inverts the day it is modelled).
+
+name = "pkexec"
+effect = "exec"
+trust = "generated"
+privilege = true
+family = { bundling = false }
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+  { names = ["--user"], arity = 1 },
+  { names = ["--disable-internal-agent"] },
+  { names = ["--keep-cwd"] },
+]

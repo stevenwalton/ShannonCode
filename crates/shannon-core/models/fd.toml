@@ -1,0 +1,64 @@
+# fd — lists NAMES under the trees it searches, where it runs when none is
+# named — until a flag runs a command on them: `-x`/`--exec` and
+# `-X`/`--exec-batch` (`find -exec`'s family), and `-l`/`--list-details`,
+# which runs `ls`. It reads no file's contents, so what widens the listing
+# (`--hidden`, `--no-ignore`, `-L`) is a plain switch here, unlike rg's:
+# `.env` named in a listing is not `.env` read. The first operand is the
+# pattern; the rest are the trees.
+#
+# Canonical names are the registry's (`shell::program`, 2026-10); every
+# spelling it knew is here.
+
+name = "fd"
+effect = "read"
+trust = "verified"
+reads_here = "list"
+family = { bundling = true, interspersed = true }
+examples.match = [
+  "fd --type f . .claude/skills",
+  "fd --no-ignore --extension mutbak . crates",
+  "fd -H -e toml",
+]
+examples.not_match = ["fd --frob x"]
+
+positional = [
+  { at = 0, role = "pattern" },
+  { at = "rest", role = "list" },
+]
+
+flag = [
+  # Runs other programs.
+  { names = ["-x", "--exec"], arity = { until = [";", "+"] }, role = "program", effect = "exec" },
+  { names = ["-X", "--exec-batch"], arity = { until = [";", "+"] }, role = "program", effect = "exec" },
+  { names = ["-l", "--list-details"], role = "program", effect = "exec" },
+  # What it matches.
+  { names = ["-g", "--glob"] }, { names = ["--regex"] }, { names = ["-F", "--fixed-strings"] },
+  { names = ["-s", "--case-sensitive"] }, { names = ["-i", "--ignore-case"] }, { names = ["-p", "--full-path"] },
+  { names = ["--and"], arity = 1, role = "pattern" },
+  # Which entries: names only, so what it skips is a switch.
+  { names = ["-H", "--hidden"] }, { names = ["--no-hidden"] },
+  { names = ["-I", "--no-ignore"] }, { names = ["--no-ignore-vcs"] }, { names = ["--no-ignore-parent"] },
+  { names = ["-u", "--unrestricted"] }, { names = ["-L", "--follow"] }, { names = ["--one-file-system"] }, { names = ["--prune"] },
+  { names = ["-t", "--type"], arity = 1, role = "enum" },
+  { names = ["-e", "--extension"], arity = 1, role = "enum" },
+  { names = ["-E", "--exclude"], arity = 1, role = "pattern" },
+  { names = ["-d", "--max-depth"], arity = 1, role = "number" },
+  { names = ["--min-depth"], arity = 1, role = "number" },
+  { names = ["--exact-depth"], arity = 1, role = "number" },
+  { names = ["-S", "--size"], arity = 1, role = "data" },
+  { names = ["--changed-within", "--change-newer-than"], canon = "changed-within", arity = 1, role = "data" },
+  { names = ["--changed-before", "--change-older-than"], canon = "changed-before", arity = 1, role = "data" },
+  { names = ["-o", "--owner"], arity = 1, role = "data" },
+  { names = ["--max-results"], arity = 1, role = "number" },
+  { names = ["-1"], canon = "one" },
+  { names = ["--ignore-file"], arity = 1, role = "read_file" },
+  { names = ["--base-directory"], arity = 1, role = "list" },
+  { names = ["--search-path"], arity = 1, role = "list" },
+  # What it prints.
+  { names = ["-a", "--absolute-path"] }, { names = ["-0", "--print0"] }, { names = ["-q", "--quiet"] },
+  { names = ["--show-errors"] }, { names = ["--strip-cwd-prefix"] },
+  { names = ["-c", "--color"], arity = 1, role = "enum" },
+  { names = ["--path-separator"], arity = 1, role = "data" },
+  { names = ["--format"], arity = 1, role = "data" },
+  { names = ["-j", "--threads"], arity = 1, role = "number" },
+]

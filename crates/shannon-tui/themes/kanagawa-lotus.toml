@@ -1,0 +1,48 @@
+# Kanagawa Lotus — github.com/rebelot/kanagawa.nvim (MIT); see NOTICE.md.
+# The palette's sixteen terminal colours and its ground: every role the
+# shipped `terminal` theme paints is drawn in them. A light theme: the
+# roles the shipped theme paints white are its text. Its green and yellow
+# are two olives an eye does not tell apart, so the verdict's caution takes
+# its orange.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.text" = "text"
+"ui.statusline" = "text"
+"ui.text.quiet" = "comment"
+"ui.muted" = "comment"
+"ui.border" = "comment"
+"decision.operator" = "comment"
+"decision.function.call" = { fg = "text", bold = true }
+"ui.caution" = "orange"
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "orange", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "orange" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#f2ecbc"
+text = "#545464"
+comment = "#8a8980"
+surface = "#c9cbd1"
+orange = "#e98a00"
+black = "#1f1f28"
+red = "#c84053"
+green = "#6f894e"
+yellow = "#77713f"
+blue = "#4d699b"
+magenta = "#b35b79"
+cyan = "#597b75"
+white = "#545464"
+bright-black = "#8a8980"
+bright-red = "#d7474b"
+bright-green = "#6e915f"
+bright-yellow = "#836f4a"
+bright-blue = "#6693bf"
+bright-magenta = "#624c83"
+bright-cyan = "#5e857a"
+bright-white = "#43436c"

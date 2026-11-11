@@ -1,0 +1,36 @@
+# Dracula — draculatheme.com/spec (MIT); see NOTICE.md. The palette's
+# sixteen terminal colours and its ground: every role the shipped `terminal`
+# theme paints is drawn in them.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#282a36"
+text = "#f8f8f2"
+comment = "#6272a4"
+surface = "#44475a"
+black = "#21222c"
+red = "#ff5555"
+green = "#50fa7b"
+yellow = "#f1fa8c"
+blue = "#bd93f9"
+magenta = "#ff79c6"
+cyan = "#8be9fd"
+white = "#f8f8f2"
+bright-black = "#6272a4"
+bright-red = "#ff6e6e"
+bright-green = "#69ff94"
+bright-yellow = "#ffffa5"
+bright-blue = "#d6acff"
+bright-magenta = "#ff92df"
+bright-cyan = "#a4ffff"
+bright-white = "#ffffff"

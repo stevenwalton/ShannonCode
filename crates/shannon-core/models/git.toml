@@ -1,0 +1,385 @@
+# git — a read of the repository (`status`, `log`, `diff`, `show`,
+# `branch`, `blame`, `ls-files`, `rev-parse`, `grep`, `config --get`)
+# until a subcommand writes it (`add`, `commit`, `checkout`, `reset`,
+# `fetch`, `pull`, `clone`, `rebase`, `config --global`), deletes (`clean`,
+# `reset --hard`, `branch -d`, `push --force`), or runs a program: `-c
+# core.pager=less` names one by configuration (any key not in `kv_safe`), `-p`
+# pages through the configured pager, `--exec-path` and `--show-signature`
+# run programs, `rebase -x` and `bisect run` run commands, `commit`
+# without `-m`/`-F`/`--no-edit` opens the editor, `credential fill` prints
+# a credential. An unknown first word runs `git-<word>` (`external`).
+#
+# `add` and `commit` write `.git` — the index and the objects — a write
+# inside the project; `push` reaches the remote (a host no rule sees yet).
+# `-5` is `-n 5` on `log`.
+
+name = "git"
+# Acts on the repository where it runs: `cd /tmp/x && git log` reads it.
+# Searched by default (`diff`, `show`, `grep` print what files hold);
+# `status` and `ls-files` print names only, and say so (`list`, 10-11).
+reads_here = true
+effect = "read"
+trust = "verified"
+external = true
+family = { bundling = true, long_abbrev = true, interspersed = true, numeric_option = "max-count" }
+# `-c KEY=VAL`: the keys known to run nothing — every other key is read as
+# naming a program, which asks. A list of the dangerous ones (`core.pager`,
+# `diff.external`, …) missed `include.path`, `remote.*.uploadpack`,
+# `gpg.ssh.program` and more (review 2026-10-11, E1); git's config has too
+# many such keys to list. A seed: a harmless key missing here asks.
+kv_safe = [
+  "user.name", "user.email", "color.", "advice.", "i18n.", "column.ui",
+  "core.quotepath", "core.autocrlf", "core.safecrlf", "core.filemode",
+  "core.ignorecase", "init.defaultbranch", "pull.rebase", "pull.ff",
+  "merge.ff", "push.default", "fetch.prune", "log.date", "log.decorate",
+  "diff.noprefix", "diff.renames", "status.showuntrackedfiles",
+  "rebase.autostash", "rebase.autosquash",
+]
+examples.match = [
+  "git status --short",
+  "git log --oneline -8",
+  "git -C ~/src/x log -1 --format='%h %s'",
+  "git add src/main.rs",
+  "git commit -q -F msg.txt",
+  "git diff --stat HEAD~1",
+]
+examples.not_match = ["git log --frob"]
+
+flag = [
+  { names = ["-C"], arity = 1, role = "dir", chdir = true },
+  { names = ["-c"], canon = "config", arity = 1, role = "kv" },
+  { names = ["--exec-path"], arity = "optional_attached", role = "dir", effect = "exec" },
+  { names = ["--git-dir"], arity = 1, role = "dir" },
+  { names = ["--work-tree"], arity = 1, role = "dir" },
+  { names = ["-p", "--paginate"], role = "program", effect = "exec" },
+  { names = ["-P", "--no-pager"] },
+  { names = ["--no-optional-locks"] },
+  { names = ["--version"] },
+  { names = ["--help"] },
+]
+
+[command.status]
+effect = "read"
+reads_here = "list"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--porcelain"], arity = "optional_attached", role = "data" }, { names = ["-s", "--short"] }, { names = ["-b", "--branch"] }, { names = ["-u", "--untracked-files"], arity = "optional_attached", role = "enum" }, { names = ["--ignored"] }]
+
+[command.log]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--oneline"] }, { names = ["-p", "--patch"] }, { names = ["--stat"] }, { names = ["--graph"] },
+  { names = ["--all"] }, { names = ["--decorate"] }, { names = ["--reverse"] }, { names = ["--no-merges"] },
+  { names = ["-n", "--max-count"], arity = 1, role = "number" },
+  { names = ["--format", "--pretty"], canon = "format", arity = 1, role = "data" },
+  { names = ["--date"], arity = 1, role = "data" },
+  { names = ["--since", "--after"], canon = "since", arity = 1, role = "data" },
+  { names = ["--until", "--before"], canon = "until", arity = 1, role = "data" },
+  { names = ["--author"], arity = 1, role = "data" },
+  { names = ["--grep"], arity = 1, role = "pattern" },
+  { names = ["-S"], arity = 1, role = "data" }, { names = ["-G"], arity = 1, role = "pattern" },
+  { names = ["--follow"] }, { names = ["--name-only"] }, { names = ["--name-status"] },
+  { names = ["--output"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["--show-signature"], effect = "exec" },
+]
+
+[command.diff]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--cached", "--staged"], canon = "cached" }, { names = ["--stat"] }, { names = ["--name-only"] }, { names = ["--name-status"] },
+  { names = ["-U", "--unified"], arity = 1, role = "number" },
+  { names = ["-w", "--ignore-all-space"] }, { names = ["--color"], arity = "optional_attached", role = "enum" },
+  { names = ["--output"], arity = 1, role = "write_file", effect = "write" },
+  { names = ["--ext-diff"], effect = "exec" },
+]
+
+[command.show]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--stat"] }, { names = ["--name-only"] }, { names = ["--format", "--pretty"], canon = "format", arity = 1, role = "data" }, { names = ["-s", "--no-patch"] }, { names = ["--show-signature"], effect = "exec" }]
+
+[command.branch]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-a", "--all"] }, { names = ["-r", "--remotes"] }, { names = ["-v", "--verbose"] }, { names = ["--no-color"] },
+  { names = ["--show-current"] }, { names = ["--list"] }, { names = ["--format"], arity = 1, role = "data" },
+  { names = ["-m", "--move"], effect = "write" }, { names = ["-c", "--copy"], effect = "write" },
+  { names = ["-u", "--set-upstream-to"], arity = 1, role = "data", effect = "write" },
+  { names = ["-d", "--delete"], effect = "delete" }, { names = ["-D"], effect = "delete" },
+]
+
+[command.remote]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-v", "--verbose"] }]
+
+[command."remote add"]
+effect = "write"
+positional = [{ at = 0, role = "data" }, { at = 1, role = "url" }]
+
+[command."remote remove"]
+effect = "write"
+positional = [{ at = 0, role = "data" }]
+
+[command.blame]
+effect = "read"
+positional = [{ at = "rest", role = "read_file" }]
+flag = [{ names = ["-L"], arity = 1, role = "data" }, { names = ["-w"] }, { names = ["--porcelain"] }]
+
+[command.ls-files]
+effect = "read"
+reads_here = "list"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-o", "--others"] }, { names = ["--exclude-standard"] }, { names = ["-m", "--modified"] }, { names = ["-z"] }]
+
+[command.rev-parse]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--abbrev-ref"] }, { names = ["--short"], arity = "optional_attached", role = "number" }, { names = ["--show-toplevel"] }, { names = ["--git-dir"] }, { names = ["--verify"] }]
+
+[command.stash]
+effect = "write"
+writes = [".git"]
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-u", "--include-untracked"] }, { names = ["-m", "--message"], arity = 1, role = "data" }]
+
+[command."stash list"]
+effect = "read"
+
+[command."stash show"]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-p", "--patch"] }, { names = ["--stat"] }]
+
+[command."stash drop"]
+effect = "delete"
+positional = [{ at = "rest", role = "data" }]
+
+[command."stash clear"]
+effect = "delete"
+
+[command.grep]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-n", "--line-number"] }, { names = ["-i", "--ignore-case"] }, { names = ["-l", "--files-with-matches"] },
+  { names = ["-E", "--extended-regexp"] }, { names = ["-F", "--fixed-strings"] }, { names = ["-w", "--word-regexp"] },
+  { names = ["-e"], arity = 1, role = "pattern" },
+  { names = ["-O", "--open-files-in-pager"], arity = "optional_attached", role = "program", effect = "exec" },
+]
+
+[command.config]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["--get"] }, { names = ["--get-all"] }, { names = ["-l", "--list"] }, { names = ["--show-origin"] },
+  { names = ["--local"] }, { names = ["--global"], effect = "write" }, { names = ["--system"], effect = "write" },
+  { names = ["--unset"], effect = "write" }, { names = ["--add"], effect = "write" },
+  { names = ["-f", "--file"], arity = 1, role = "read_file" },
+  { names = ["-e", "--edit"], effect = "exec" },
+]
+
+[command.commit]
+effect = "write"
+writes = [".git"]
+editor_unless = ["message", "no-edit", "file", "reuse-message"]
+flag = [
+  { names = ["-m", "--message"], arity = 1, role = "data" },
+  { names = ["-F", "--file"], arity = 1, role = "read_file" },
+  { names = ["-C", "--reuse-message"], arity = 1, role = "data" },
+  { names = ["--amend"] }, { names = ["--no-edit"] }, { names = ["-a", "--all"] },
+  { names = ["-q", "--quiet"] }, { names = ["-v", "--verbose"] }, { names = ["-s", "--signoff"] },
+  { names = ["-n", "--no-verify"] }, { names = ["--allow-empty"] }, { names = ["--dry-run"] },
+  { names = ["--author"], arity = 1, role = "data" }, { names = ["--date"], arity = 1, role = "data" },
+]
+
+[command.add]
+effect = "write"
+writes = [".git"]
+positional = [{ at = "rest", role = "read_file" }]
+flag = [{ names = ["-A", "--all"] }, { names = ["-u", "--update"] }, { names = ["-p", "--patch"] }, { names = ["-N", "--intent-to-add"] }, { names = ["-f", "--force"] }, { names = ["-n", "--dry-run"] }, { names = ["-v", "--verbose"] }]
+
+[command.rm]
+effect = "delete"
+positional = [{ at = "rest", role = "delete_file" }]
+flag = [{ names = ["--cached"], effect = "write" }, { names = ["-r"] }, { names = ["-f", "--force"] }, { names = ["-n", "--dry-run"] }, { names = ["-q", "--quiet"] }]
+
+[command.mv]
+effect = "write"
+positional = [{ at = "rest", role = "read_file" }, { at = "last", role = "write_file" }]
+flag = [{ names = ["-f", "--force"] }, { names = ["-k"] }, { names = ["-n", "--dry-run"] }, { names = ["-v", "--verbose"] }]
+
+[command.push]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-f", "--force"], effect = "delete" },
+  { names = ["--force-with-lease"], arity = "optional_attached", role = "data", effect = "delete" },
+  { names = ["-d", "--delete"], effect = "delete" },
+  { names = ["-u", "--set-upstream"] }, { names = ["--tags"] }, { names = ["--all"] },
+  { names = ["-n", "--dry-run"] }, { names = ["-q", "--quiet"] }, { names = ["-v", "--verbose"] },
+  { names = ["-o", "--push-option"], arity = 1, role = "data" },
+]
+
+[command.clean]
+effect = "delete"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-f", "--force"] }, { names = ["-d"] }, { names = ["-x"] }, { names = ["-X"] }, { names = ["-n", "--dry-run"] }, { names = ["-i", "--interactive"] }, { names = ["-q", "--quiet"] }, { names = ["-e", "--exclude"], arity = 1, role = "pattern" }]
+
+[command.reset]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--hard"], effect = "delete" }, { names = ["--soft"] }, { names = ["--mixed"] }, { names = ["-q", "--quiet"] }, { names = ["-p", "--patch"] }]
+
+[command.checkout]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-b"], arity = 1, role = "data" }, { names = ["-B"], arity = 1, role = "data" }, { names = ["-f", "--force"], effect = "delete" }, { names = ["--detach"] }, { names = ["-q", "--quiet"] }, { names = ["-t", "--track"] }]
+
+[command.switch]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-c", "--create"], arity = 1, role = "data" }, { names = ["-C", "--force-create"], arity = 1, role = "data" }, { names = ["-f", "--force", "--discard-changes"], canon = "force", effect = "delete" }, { names = ["--detach"] }, { names = ["-q", "--quiet"] }]
+
+[command.restore]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-s", "--source"], arity = 1, role = "data" }, { names = ["-S", "--staged"] }, { names = ["-W", "--worktree"] }, { names = ["-q", "--quiet"] }]
+
+[command.fetch]
+effect = "write"
+writes = [".git"]
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--all"] }, { names = ["-p", "--prune"] }, { names = ["--tags"] }, { names = ["-q", "--quiet"] }, { names = ["-v", "--verbose"] }, { names = ["--depth"], arity = 1, role = "number" }, { names = ["--upload-pack"], arity = 1, role = "program", effect = "exec" }]
+
+[command.pull]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--rebase"], arity = "optional_attached", role = "enum" }, { names = ["--ff-only"] }, { names = ["--no-ff"] }, { names = ["-q", "--quiet"] }, { names = ["-v", "--verbose"] }, { names = ["--autostash"] }]
+
+[command.merge]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--ff-only"] }, { names = ["--no-ff"] }, { names = ["--squash"] }, { names = ["--abort"] }, { names = ["--continue"] }, { names = ["-m"], arity = 1, role = "data" }, { names = ["-q", "--quiet"] }]
+
+[command.clone]
+effect = "write"
+positional = [{ at = 0, role = "url" }, { at = 1, role = "write_file" }]
+flag = [
+  { names = ["--depth"], arity = 1, role = "number" }, { names = ["-b", "--branch"], arity = 1, role = "data" },
+  { names = ["-q", "--quiet"] }, { names = ["--bare"] }, { names = ["--mirror"] }, { names = ["--recurse-submodules"] },
+  { names = ["--template"], arity = 1, role = "read_file" },
+  { names = ["-c", "--config"], canon = "config", arity = 1, role = "kv" },
+  { names = ["-u", "--upload-pack"], arity = 1, role = "program", effect = "exec" },
+]
+
+[command.rebase]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-i", "--interactive"] }, { names = ["--onto"], arity = 1, role = "data" },
+  { names = ["--continue"] }, { names = ["--abort"] }, { names = ["--skip"] }, { names = ["--autostash"] },
+  { names = ["-x", "--exec"], arity = 1, role = "code", effect = "exec" },
+]
+
+[command.cherry-pick]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-n", "--no-commit"] }, { names = ["-x"] }, { names = ["--continue"] }, { names = ["--abort"] }]
+
+[command.revert]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-n", "--no-commit"] }, { names = ["--no-edit"] }, { names = ["--continue"] }, { names = ["--abort"] }]
+
+[command.tag]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-l", "--list"] }, { names = ["-n"], arity = "optional_attached", role = "number" }, { names = ["-a", "--annotate"], effect = "write" }, { names = ["-m", "--message"], arity = 1, role = "data", effect = "write" }, { names = ["-d", "--delete"], effect = "delete" }, { names = ["-f", "--force"], effect = "write" }]
+
+[command.bisect]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+
+[command."bisect run"]
+effect = "exec"
+positional = [{ at = "rest", role = "argv" }]
+
+[command.submodule]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+
+[command."submodule foreach"]
+effect = "exec"
+positional = [{ at = "rest", role = "argv" }]
+
+[command."submodule update"]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--init"] }, { names = ["--recursive"] }]
+
+[command.worktree]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+
+[command."worktree list"]
+effect = "read"
+flag = [{ names = ["--porcelain"] }, { names = ["-v", "--verbose"] }]
+
+[command."worktree add"]
+effect = "write"
+positional = [{ at = 0, role = "write_file" }, { at = "rest", role = "data" }]
+flag = [{ names = ["-b"], arity = 1, role = "data" }, { names = ["--detach"] }, { names = ["-f", "--force"] }]
+
+[command."worktree remove"]
+effect = "delete"
+positional = [{ at = 0, role = "delete_file" }]
+flag = [{ names = ["-f", "--force"] }]
+
+[command.maintenance]
+effect = "read"
+
+[command."maintenance start"]
+effect = "write"
+
+[command."maintenance run"]
+effect = "write"
+
+[command.credential]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+
+[command."credential fill"]
+effect = "read"
+prints_secret = true
+
+[command.init]
+effect = "write"
+positional = [{ at = 0, role = "write_file" }]
+flag = [{ names = ["-b", "--initial-branch"], arity = 1, role = "data" }, { names = ["--bare"] }, { names = ["-q", "--quiet"] }]
+
+[command.describe]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--tags"] }, { names = ["--always"] }, { names = ["--dirty"], arity = "optional_attached", role = "data" }, { names = ["--abbrev"], arity = 1, role = "number" }]
+
+[command.shortlog]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-s", "--summary"] }, { names = ["-n", "--numbered"] }, { names = ["-e", "--email"] }]
+
+[command.reflog]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+
+[command.cat-file]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-p"] }, { names = ["-t"] }, { names = ["-s"] }, { names = ["-e"] }]
+
+[command.ls-tree]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-r"] }, { names = ["--name-only"] }, { names = ["-l", "--long"] }]

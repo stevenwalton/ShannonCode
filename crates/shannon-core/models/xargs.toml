@@ -1,0 +1,37 @@
+# xargs — runs the program named by its operands on words read from its
+# input, which the gate never sees. The operands are another command line
+# (`argv`); the words fed to it are unknown, so the inner act asks until a
+# rule names it (design §8.1: stream-fed argv asks). `-p` prompts on the
+# terminal, which a tool child does not have.
+
+name = "xargs"
+effect = "exec"
+trust = "verified"
+# Its argv comes from its input, wherever it runs: an inner `xargs` (`find
+# -exec xargs rm`, `uv run xargs rm`) is as unsound as a peeled one.
+argv_from_stdin = true
+family = { bundling = true, long_abbrev = true, interspersed = false }
+examples.match = ["xargs -0 rm", "xargs -n 1 -I {} cp {} /tmp", "xargs wc -l"]
+examples.not_match = ["xargs --frob rm"]
+
+positional = [{ at = "rest", role = "argv" }]
+
+flag = [
+  { names = ["-0", "--null"], canon = "null" },
+  { names = ["-n", "--max-args"], canon = "max-args", arity = 1, role = "number" },
+  # `-i` is the deprecated spelling with an optional attached value; read
+  # with `-I`'s arity, so a bare `-i` takes the next word (the conservative
+  # reading: a word taken as a value is never a file run).
+  { names = ["-I", "-i", "--replace"], canon = "replace", arity = 1, role = "data" },
+  { names = ["-P", "--max-procs"], canon = "max-procs", arity = 1, role = "number" },
+  { names = ["-L", "--max-lines"], canon = "max-lines", arity = 1, role = "number" },
+  { names = ["-s", "--max-chars"], canon = "max-chars", arity = 1, role = "number" },
+  { names = ["-r", "--no-run-if-empty"], canon = "no-run-if-empty" },
+  { names = ["-d", "--delimiter"], canon = "delimiter", arity = 1, role = "data" },
+  { names = ["-E", "--eof"], canon = "eof", arity = 1, role = "data" },
+  { names = ["-a", "--arg-file"], canon = "arg-file", arity = 1, role = "read_file" },
+  { names = ["-t", "--verbose"], canon = "verbose" },
+  { names = ["-p", "--interactive"], canon = "interactive" },
+  { names = ["-x", "--exit"], canon = "exit" },
+  { names = ["-o", "--open-tty"], canon = "open-tty" },
+]

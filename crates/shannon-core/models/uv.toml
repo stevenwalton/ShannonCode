@@ -1,0 +1,260 @@
+# uv — Python's package manager. `pip list`, `pip freeze`, `pip show`,
+# `tree --frozen`, `export --frozen`, `python list`, `cache dir`, `self
+# version` and `version` read; `sync` re-locks, builds and REMOVES
+# packages; `venv` removes an existing `.venv` at the target; `run`, `tool
+# run`, `build`, `format` and `init` run code; `tree` and `export` without
+# `--frozen`/`--locked` re-lock (a write); `add`/`remove`/`lock` write the
+# project files; `cache clean`/`prune` delete; `auth token` prints a
+# credential. `--directory` and `--project` move the whole operation to
+# another tree. Every network call reaches pypi.org (implicit host).
+# (Research §7.4: `uv run` is never a read.)
+
+name = "uv"
+# Acts on the project where it runs: `cd /tmp/x && uv sync` reads it.
+reads_here = true
+effect = "read"
+trust = "verified"
+hosts = ["pypi.org"]
+family = { bundling = true, interspersed = true }
+examples.match = [
+  "uv pip list",
+  "uv tree --frozen",
+  "uv run pytest tests/",
+  "uv sync",
+  "uv --directory /srv/other sync",
+]
+examples.not_match = ["uv pip list --frob"]
+
+flag = [
+  { names = ["--directory"], arity = 1, role = "dir", chdir = true },
+  { names = ["--project"], arity = 1, role = "dir", chdir = true },
+  { names = ["-q", "--quiet"] }, { names = ["-v", "--verbose"] },
+  { names = ["-n", "--no-cache"] }, { names = ["--offline"] },
+  { names = ["--frozen"] }, { names = ["--locked"] }, { names = ["--no-sync"] },
+  { names = ["--index"], arity = 1, role = "url" },
+  { names = ["--index-url", "-i"], canon = "index-url", arity = 1, role = "url" },
+  { names = ["-p", "--python"], arity = 1, role = "data" },
+  { names = ["--color"], arity = 1, role = "enum" },
+  { names = ["--no-progress"] }, { names = ["--native-tls"] },
+  { names = ["--cache-dir"], arity = 1, role = "dir" },
+  { names = ["--config-file"], arity = 1, role = "read_file" },
+  { names = ["-h", "--help"] }, { names = ["-V", "--version"] },
+]
+
+[command.run]
+effect = "exec"
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+  { names = ["--with"], arity = 1, role = "data", effect = "write" },
+  { names = ["--with-requirements"], arity = 1, role = "read_file", effect = "write" },
+  { names = ["--env-file"], arity = 1, role = "read_file" },
+  { names = ["--no-project"] }, { names = ["--isolated"] }, { names = ["--no-dev"] }, { names = ["--all-extras"] },
+  { names = ["-m", "--module"], effect = "exec" },
+  { names = ["-s", "--script"], effect = "exec" },
+]
+
+[command.pip]
+effect = "read"
+
+[command."pip list"]
+effect = "read"
+flag = [{ names = ["--format"], arity = 1, role = "enum" }, { names = ["--outdated"] }, { names = ["-e", "--editable"] }, { names = ["--system"] }]
+
+[command."pip freeze"]
+effect = "read"
+flag = [{ names = ["--system"] }, { names = ["--exclude-editable"] }]
+
+[command."pip show"]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-f", "--files"] }, { names = ["--system"] }]
+
+[command."pip check"]
+effect = "read"
+
+[command."pip tree"]
+effect = "read"
+flag = [{ names = ["-d", "--depth"], arity = 1, role = "number" }, { names = ["--invert"] }, { names = ["--outdated"] }]
+
+[command."pip install"]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-r", "--requirements", "--requirement"], canon = "requirements", arity = 1, role = "read_file" },
+  { names = ["-e", "--editable"], arity = 1, role = "read_file" },
+  { names = ["--system"] }, { names = ["--break-system-packages"] }, { names = ["-U", "--upgrade"] },
+  { names = ["--no-deps"] }, { names = ["--dry-run"] }, { names = ["--reinstall"] },
+  { names = ["--target"], arity = 1, role = "write_file" },
+  { names = ["--prefix"], arity = 1, role = "write_file" },
+]
+
+[command."pip compile"]
+effect = "read"
+positional = [{ at = "rest", role = "read_file" }]
+flag = [{ names = ["-o", "--output-file"], arity = 1, role = "write_file", effect = "write" }, { names = ["-U", "--upgrade"] }, { names = ["--generate-hashes"] }]
+
+[command."pip sync"]
+effect = "delete"
+positional = [{ at = "rest", role = "read_file" }]
+flag = [{ names = ["--system"] }, { names = ["--dry-run"] }]
+
+[command."pip uninstall"]
+effect = "delete"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["-r", "--requirements", "--requirement"], canon = "requirements", arity = 1, role = "read_file" }, { names = ["--system"] }]
+
+[command.tool]
+effect = "read"
+
+[command."tool run"]
+aliases = []
+effect = "exec"
+positional = [{ at = "rest", role = "argv" }]
+flag = [{ names = ["--from"], arity = 1, role = "data" }, { names = ["--with"], arity = 1, role = "data" }]
+
+[command.uvx]
+effect = "exec"
+positional = [{ at = "rest", role = "argv" }]
+
+[command."tool install"]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--force"] }, { names = ["--with"], arity = 1, role = "data" }]
+
+[command."tool uninstall"]
+effect = "delete"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--all"] }]
+
+[command."tool list"]
+effect = "read"
+
+[command."tool dir"]
+effect = "read"
+
+[command."tool update-shell"]
+effect = "write"
+
+[command.python]
+effect = "read"
+
+[command."python list"]
+effect = "read"
+flag = [{ names = ["--all-versions"] }, { names = ["--only-installed"] }]
+
+[command."python find"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+
+[command."python dir"]
+effect = "read"
+
+[command."python install"]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--default"] }, { names = ["--preview"] }, { names = ["-r", "--reinstall"] }]
+
+[command."python pin"]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+
+[command.cache]
+effect = "read"
+
+[command."cache dir"]
+effect = "read"
+
+[command."cache clean"]
+effect = "delete"
+positional = [{ at = "rest", role = "data" }]
+
+[command."cache prune"]
+effect = "delete"
+flag = [{ names = ["--ci"] }]
+
+[command.self]
+effect = "read"
+
+[command."self version"]
+effect = "read"
+flag = [{ names = ["--short"] }, { names = ["--output-format"], arity = 1, role = "enum" }]
+
+[command."self update"]
+effect = "write"
+
+[command.tree]
+effect = "write"
+read_only_with = ["frozen", "locked"]
+flag = [{ names = ["--no-build"] }, { names = ["-d", "--depth"], arity = 1, role = "number" }, { names = ["--invert"] }, { names = ["--outdated"] }, { names = ["--universal"] }]
+
+[command.export]
+effect = "write"
+read_only_with = ["frozen", "locked"]
+flag = [{ names = ["--format"], arity = 1, role = "enum" }, { names = ["-o", "--output-file"], arity = 1, role = "write_file", effect = "write" }, { names = ["--no-hashes"] }, { names = ["--no-dev"] }]
+
+[command.version]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--bump"], arity = 1, role = "enum", effect = "write" }, { names = ["--short"] }, { names = ["--dry-run"] }]
+
+[command.sync]
+effect = "delete"
+flag = [{ names = ["--inexact"] }, { names = ["--all-extras"] }, { names = ["--no-dev"] }, { names = ["--dry-run"] }, { names = ["--reinstall"] }]
+
+[command.lock]
+effect = "write"
+flag = [{ names = ["--check"] }, { names = ["--upgrade"] }, { names = ["-P", "--upgrade-package"], arity = 1, role = "data" }, { names = ["--dry-run"] }]
+
+[command.venv]
+effect = "delete"
+positional = [{ at = 0, role = "write_file" }]
+flag = [{ names = ["--seed"] }, { names = ["--allow-existing"] }, { names = ["--prompt"], arity = 1, role = "data" }]
+
+[command.init]
+effect = "exec"
+positional = [{ at = 0, role = "write_file" }]
+flag = [{ names = ["--vcs"], arity = 1, role = "enum" }, { names = ["--name"], arity = 1, role = "data" }, { names = ["--lib"] }, { names = ["--app"] }, { names = ["--package"] }, { names = ["--no-workspace"] }, { names = ["--bare"] }]
+
+[command.add]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--git"], arity = 1, role = "url" }, { names = ["--dev"] }, { names = ["--optional"], arity = 1, role = "data" }, { names = ["--editable"] }, { names = ["-r", "--requirements"], canon = "requirements", arity = 1, role = "read_file" }]
+
+[command.remove]
+effect = "write"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--dev"] }, { names = ["--optional"], arity = 1, role = "data" }]
+
+[command.format]
+effect = "exec"
+positional = [{ at = "rest", role = "data" }]
+flag = [{ names = ["--check"] }, { names = ["--diff"] }]
+
+[command.build]
+effect = "exec"
+positional = [{ at = 0, role = "dir" }]
+flag = [{ names = ["--sdist"] }, { names = ["--wheel"] }, { names = ["-o", "--out-dir"], arity = 1, role = "write_file" }]
+
+[command.publish]
+effect = "write"
+positional = [{ at = "rest", role = "read_file" }]
+flag = [{ names = ["--index"], arity = 1, role = "data" }, { names = ["--publish-url"], arity = 1, role = "url" }]
+
+[command.auth]
+effect = "read"
+
+[command."auth login"]
+effect = "write"
+positional = [{ at = 0, role = "host" }]
+
+[command."auth logout"]
+effect = "write"
+positional = [{ at = 0, role = "host" }]
+
+[command."auth token"]
+effect = "read"
+prints_secret = true
+positional = [{ at = 0, role = "host" }]
+
+[command.audit]
+effect = "write"

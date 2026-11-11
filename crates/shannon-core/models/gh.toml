@@ -1,0 +1,306 @@
+# gh — GitHub's CLI. Every call reaches api.github.com (the implicit host,
+# which the pane shows and no rule judges — the concession, design §10
+# 10-09). A read until a subcommand writes (`pr close`, `pr create`,
+# `alias set`), deletes (`repo delete`), or runs a program: `pr checkout`
+# and `repo clone` run git, `--web` opens a browser, `alias set --shell`
+# stores code that runs at `gh <alias>`, `extension exec` runs a
+# third-party binary — and an unknown first word runs `gh-<word>`, an
+# extension (`external`). `gh auth token` prints the credential.
+#
+# `gh api`: `-X`/`--method` is the method, last wins; `-f`, `-F` and
+# `--input` make it a POST unless a method is given (verified in gh's
+# source, research §7.4); the endpoint is a path on the implicit host, and
+# the ones gh's own help never shows carry a gloss for the pane.
+
+name = "gh"
+effect = "read"
+trust = "verified"
+hosts = ["api.github.com"]
+external = true
+family = { bundling = true, interspersed = true }
+examples.match = [
+  "gh pr list --limit 5",
+  "gh pr view 12 --comments",
+  "gh api repos/{owner}/{repo}/releases",
+  "gh api -X GET search/issues -f q='repo:cli/cli is:open'",
+  "gh issue list -s open",
+]
+examples.not_match = ["gh pr list --frob"]
+
+flag = [
+  { names = ["--help"] },
+  { names = ["--version"] },
+]
+
+[command.pr]
+effect = "read"
+flag = [{ names = ["-R", "--repo"], arity = 1, role = "data" }]
+
+[command."pr view"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [
+  { names = ["-c", "--comments"] },
+  { names = ["--json"], arity = 1, role = "data" },
+  { names = ["-q", "--jq"], canon = "jq", arity = 1, role = "data" },
+  { names = ["-t", "--template"], arity = 1, role = "data" },
+  { names = ["-w", "--web"], role = "program", effect = "exec" },
+]
+
+[command."pr list"]
+effect = "read"
+flag = [
+  { names = ["-L", "--limit"], arity = 1, role = "number" },
+  { names = ["-s", "--state"], arity = 1, role = "enum" },
+  { names = ["-l", "--label"], arity = 1, role = "data" },
+  { names = ["-a", "--author"], arity = 1, role = "data" },
+  { names = ["-A", "--assignee"], arity = 1, role = "data" },
+  { names = ["-B", "--base"], arity = 1, role = "data" },
+  { names = ["-H", "--head"], arity = 1, role = "data" },
+  { names = ["-S", "--search"], arity = 1, role = "data" },
+  { names = ["-d", "--draft"] },
+  { names = ["--json"], arity = 1, role = "data" },
+  { names = ["-q", "--jq"], canon = "jq", arity = 1, role = "data" },
+  { names = ["-t", "--template"], arity = 1, role = "data" },
+  { names = ["-w", "--web"], role = "program", effect = "exec" },
+]
+
+[command."pr diff"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--name-only"] }, { names = ["--patch"] }, { names = ["--color"], arity = 1, role = "enum" }]
+
+[command."pr checks"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--watch"] }, { names = ["--fail-fast"] }, { names = ["--required"] }]
+
+[command."pr status"]
+effect = "read"
+
+[command."pr close"]
+effect = "write"
+positional = [{ at = 0, role = "data" }]
+flag = [
+  { names = ["-c", "--comment"], arity = 1, role = "data" },
+  { names = ["-d", "--delete-branch"], effect = "delete" },
+]
+
+[command."pr create"]
+effect = "write"
+flag = [
+  { names = ["-t", "--title"], arity = 1, role = "data" },
+  { names = ["-b", "--body"], arity = 1, role = "data" },
+  { names = ["-F", "--body-file"], arity = 1, role = "read_file" },
+  { names = ["-f", "--fill"] },
+  { names = ["--fill-first"] },
+  { names = ["-d", "--draft"] },
+  { names = ["-B", "--base"], arity = 1, role = "data" },
+  { names = ["-H", "--head"], arity = 1, role = "data" },
+  { names = ["-l", "--label"], arity = 1, role = "data" },
+  { names = ["-r", "--reviewer"], arity = 1, role = "data" },
+  { names = ["-a", "--assignee"], arity = 1, role = "data" },
+  { names = ["-w", "--web"], role = "program", effect = "exec" },
+]
+
+[command."pr checkout"]
+effect = "exec"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["-b", "--branch"], arity = 1, role = "data" }, { names = ["-f", "--force"] }, { names = ["--detach"] }]
+
+[command."pr merge"]
+effect = "write"
+positional = [{ at = 0, role = "data" }]
+flag = [
+  { names = ["-m", "--merge"] }, { names = ["-s", "--squash"] }, { names = ["-r", "--rebase"] },
+  { names = ["--auto"] }, { names = ["--admin"] },
+  { names = ["-d", "--delete-branch"], effect = "delete" },
+]
+
+[command.issue]
+effect = "read"
+flag = [{ names = ["-R", "--repo"], arity = 1, role = "data" }]
+
+[command."issue view"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [
+  { names = ["-c", "--comments"] },
+  { names = ["--json"], arity = 1, role = "data" },
+  { names = ["-q", "--jq"], canon = "jq", arity = 1, role = "data" },
+  { names = ["-w", "--web"], role = "program", effect = "exec" },
+]
+
+[command."issue list"]
+effect = "read"
+flag = [
+  { names = ["-L", "--limit"], arity = 1, role = "number" },
+  { names = ["-s", "--state"], arity = 1, role = "enum" },
+  { names = ["-l", "--label"], arity = 1, role = "data" },
+  { names = ["-a", "--assignee"], arity = 1, role = "data" },
+  { names = ["-A", "--author"], arity = 1, role = "data" },
+  { names = ["-S", "--search"], arity = 1, role = "data" },
+  { names = ["--json"], arity = 1, role = "data" },
+  { names = ["-q", "--jq"], canon = "jq", arity = 1, role = "data" },
+  { names = ["-w", "--web"], role = "program", effect = "exec" },
+]
+
+[command."issue create"]
+effect = "write"
+flag = [
+  { names = ["-t", "--title"], arity = 1, role = "data" },
+  { names = ["-b", "--body"], arity = 1, role = "data" },
+  { names = ["-F", "--body-file"], arity = 1, role = "read_file" },
+  { names = ["-l", "--label"], arity = 1, role = "data" },
+  { names = ["-a", "--assignee"], arity = 1, role = "data" },
+  { names = ["-w", "--web"], role = "program", effect = "exec" },
+]
+
+[command."issue close"]
+effect = "write"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["-c", "--comment"], arity = 1, role = "data" }, { names = ["-r", "--reason"], arity = 1, role = "enum" }]
+
+[command.api]
+effect = "read"
+positional = [{ at = 0, role = "endpoint" }]
+endpoints = { "user" = "the authenticated user's profile", "user/emails" = "the authenticated user's email addresses", "rate_limit" = "the token's remaining API quota", "octocat" = "GitHub's Octocat, as ASCII art" }
+flag = [
+  { names = ["-X", "--method"], arity = 1, role = "enum" },
+  { names = ["-f", "--raw-field"], arity = 1, role = "kv", implies = { method = "POST" } },
+  { names = ["-F", "--field"], arity = 1, role = "kv", implies = { method = "POST" } },
+  { names = ["--input"], arity = 1, role = "read_file", implies = { method = "POST" } },
+  { names = ["-H", "--header"], arity = 1, role = "data" },
+  { names = ["--hostname"], arity = 1, role = "host" },
+  { names = ["-q", "--jq"], canon = "jq", arity = 1, role = "data" },
+  { names = ["-t", "--template"], arity = 1, role = "data" },
+  { names = ["--paginate"] },
+  { names = ["--slurp"] },
+  { names = ["-i", "--include"] },
+  { names = ["--silent"] },
+  { names = ["--verbose"] },
+  { names = ["-p", "--preview"], arity = 1, role = "data" },
+  { names = ["--cache"], arity = 1, role = "data" },
+]
+
+[command.auth]
+effect = "read"
+
+[command."auth status"]
+effect = "read"
+flag = [{ names = ["-t", "--show-token"] }, { names = ["-h", "--hostname"], arity = 1, role = "host" }, { names = ["-a", "--active"] }]
+
+[command."auth token"]
+effect = "read"
+prints_secret = true
+flag = [{ names = ["-h", "--hostname"], arity = 1, role = "host" }, { names = ["-u", "--user"], arity = 1, role = "data" }]
+
+[command."auth login"]
+effect = "write"
+flag = [
+  { names = ["-h", "--hostname"], arity = 1, role = "host" },
+  { names = ["-w", "--web"] },
+  { names = ["--with-token"] },
+  { names = ["-p", "--git-protocol"], arity = 1, role = "enum" },
+  { names = ["-s", "--scopes"], arity = 1, role = "data" },
+]
+
+[command."auth logout"]
+effect = "write"
+flag = [{ names = ["-h", "--hostname"], arity = 1, role = "host" }, { names = ["-u", "--user"], arity = 1, role = "data" }]
+
+[command.alias]
+effect = "read"
+
+[command."alias list"]
+effect = "read"
+
+[command."alias set"]
+effect = "write"
+positional = [{ at = 0, role = "data" }, { at = 1, role = "data" }]
+flag = [
+  # The expansion is stored and runs as a shell command at `gh <alias>`.
+  { names = ["-s", "--shell"], effect = "exec" },
+  { names = ["--clobber"] },
+]
+
+[command."alias delete"]
+effect = "write"
+positional = [{ at = 0, role = "data" }]
+
+[command.extension]
+effect = "read"
+
+[command."extension list"]
+effect = "read"
+
+[command."extension exec"]
+effect = "exec"
+positional = [{ at = 0, role = "program" }, { at = "rest", role = "data" }]
+
+[command."extension install"]
+effect = "write"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--pin"], arity = 1, role = "data" }, { names = ["--force"] }]
+
+[command.skill]
+effect = "read"
+
+[command."skill install"]
+effect = "write"
+writes = [".claude/skills"]
+positional = [{ at = 0, role = "data" }, { at = "rest", role = "data" }]
+flag = [
+  { names = ["--agent"], arity = 1, role = "enum" },
+  { names = ["--scope"], arity = 1, role = "enum" },
+  { names = ["--dir"], arity = 1, role = "write_file" },
+  { names = ["--force"] },
+]
+
+[command.run]
+effect = "read"
+
+[command."run list"]
+effect = "read"
+flag = [{ names = ["-L", "--limit"], arity = 1, role = "number" }, { names = ["-w", "--workflow"], arity = 1, role = "data" }, { names = ["-b", "--branch"], arity = 1, role = "data" }, { names = ["-s", "--status"], arity = 1, role = "enum" }, { names = ["--json"], arity = 1, role = "data" }]
+
+[command."run view"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--log"] }, { names = ["--log-failed"] }, { names = ["-j", "--job"], arity = 1, role = "data" }, { names = ["-v", "--verbose"] }, { names = ["--json"], arity = 1, role = "data" }, { names = ["-w", "--web"], role = "program", effect = "exec" }]
+
+[command.repo]
+effect = "read"
+
+[command."repo view"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--json"], arity = 1, role = "data" }, { names = ["-b", "--branch"], arity = 1, role = "data" }, { names = ["-w", "--web"], role = "program", effect = "exec" }]
+
+[command."repo clone"]
+effect = "exec"
+positional = [{ at = 0, role = "data" }, { at = "rest", role = "data" }]
+
+[command."repo delete"]
+effect = "delete"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--yes"] }]
+
+[command.search]
+effect = "read"
+positional = [{ at = "rest", role = "data" }]
+
+[command.release]
+effect = "read"
+
+[command."release list"]
+effect = "read"
+flag = [{ names = ["-L", "--limit"], arity = 1, role = "number" }, { names = ["--json"], arity = 1, role = "data" }]
+
+[command."release view"]
+effect = "read"
+positional = [{ at = 0, role = "data" }]
+flag = [{ names = ["--json"], arity = 1, role = "data" }, { names = ["-w", "--web"], role = "program", effect = "exec" }]
+
+[command.status]
+effect = "read"

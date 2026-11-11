@@ -1,0 +1,10 @@
+# nohup — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "nohup"
+effect = "exec"
+trust = "generated"
+family = { bundling = false }
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+]

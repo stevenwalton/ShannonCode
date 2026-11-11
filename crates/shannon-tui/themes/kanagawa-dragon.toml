@@ -1,0 +1,36 @@
+# Kanagawa Dragon — github.com/rebelot/kanagawa.nvim (MIT); see NOTICE.md.
+# The palette's sixteen terminal colours and its ground: every role the
+# shipped `terminal` theme paints is drawn in them.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#181616"
+text = "#c5c9c5"
+comment = "#a6a69c"
+surface = "#223249"
+black = "#0d0c0c"
+red = "#c4746e"
+green = "#8a9a7b"
+yellow = "#c4b28a"
+blue = "#8ba4b0"
+magenta = "#a292a3"
+cyan = "#8ea4a2"
+white = "#c8c093"
+bright-black = "#a6a69c"
+bright-red = "#e46876"
+bright-green = "#87a987"
+bright-yellow = "#e6c384"
+bright-blue = "#7fb4ca"
+bright-magenta = "#938aa9"
+bright-cyan = "#7aa89f"
+bright-white = "#c5c9c5"

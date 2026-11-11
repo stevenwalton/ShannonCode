@@ -1,0 +1,50 @@
+# One Dark — github.com/joshdick/onedark.vim (MIT), after Atom's One Dark;
+# see NOTICE.md. The palette's sixteen terminal colours and its ground:
+# every role the shipped `terminal` theme paints is drawn in them. Its
+# bright white is its comment grey and its bright black near its ground, so
+# text and the faint roles take its text and comment colours; its bright
+# magenta is its magenta, a withheld value's colour, so the decision pane's
+# expansions and constants take its orange.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.text" = "text"
+"ui.statusline" = "text"
+"ui.text.faint" = "comment"
+"markup.raw.fence" = "comment"
+"decision.function.call" = { fg = "text", bold = true }
+"decision.variable.special" = "orange"
+"decision.tag" = "orange"
+"decision.number" = "orange"
+"decision.constant" = "orange"
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#282c34"
+text = "#abb2bf"
+comment = "#5c6370"
+surface = "#3e4452"
+orange = "#d19a66"
+black = "#282c34"
+red = "#e06c75"
+green = "#98c379"
+yellow = "#e5c07b"
+blue = "#61afef"
+magenta = "#c678dd"
+cyan = "#56b6c2"
+white = "#abb2bf"
+bright-black = "#3e4452"
+bright-red = "#be5046"
+bright-green = "#98c379"
+bright-yellow = "#d19a66"
+bright-blue = "#61afef"
+bright-magenta = "#c678dd"
+bright-cyan = "#56b6c2"
+bright-white = "#5c6370"

@@ -1,0 +1,58 @@
+# Solarized (light) — github.com/altercation/solarized, © 2011 Ethan
+# Schoonover (MIT); see NOTICE.md. The palette's sixteen terminal colours
+# and its ground: every role the shipped `terminal` theme paints is drawn
+# in them. A light theme, and Solarized's bright slots are its greys: the
+# roles the shipped theme paints white are its text, the decision pane's
+# strings, flags and expansions take its cyan, violet and orange.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.text" = "emphasis"
+"ui.statusline" = "emphasis"
+"ui.text.quiet" = "comment"
+"ui.text.faint" = "comment"
+"ui.muted" = "comment"
+"ui.tabline" = "comment"
+"ui.border" = "comment"
+"ui.border.aimed" = "cyan"
+"markup.raw.fence" = "comment"
+"decision.operator" = "comment"
+"decision.function.call" = { fg = "emphasis", bold = true }
+"decision.string" = "cyan"
+"decision.markup.raw" = "cyan"
+"decision.variable.parameter" = "violet"
+"decision.variable.special" = "orange"
+"decision.tag" = "orange"
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#fdf6e3"
+text = "#657b83"
+emphasis = "#586e75"
+comment = "#93a1a1"
+surface = "#eee8d5"
+orange = "#cb4b16"
+violet = "#6c71c4"
+black = "#073642"
+red = "#dc322f"
+green = "#859900"
+yellow = "#b58900"
+blue = "#268bd2"
+magenta = "#d33682"
+cyan = "#2aa198"
+white = "#eee8d5"
+bright-black = "#002b36"
+bright-red = "#cb4b16"
+bright-green = "#586e75"
+bright-yellow = "#657b83"
+bright-blue = "#839496"
+bright-magenta = "#6c71c4"
+bright-cyan = "#93a1a1"
+bright-white = "#fdf6e3"

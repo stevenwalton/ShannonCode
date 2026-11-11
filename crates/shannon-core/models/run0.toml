@@ -1,0 +1,32 @@
+# run0 — systemd's privilege wrapper (systemd 256+): runs the command as
+# another user (root by default) in a transient unit. A privilege wrapper:
+# a hard ask unless an allow names the program it runs and every flag given
+# it (`allow run0 -u=postgres psql *`; Steven, 10-11). Modelled so it
+# reaches the privilege check by its model; unmodelled, it was no privilege
+# wrapper at all, and `allow run0 *` read its command as mere words.
+#
+# Flags from run0(1) as recalled (2026-10-11), not checked against a binary
+# on this machine: a flag missing here is unknown, and an unknown flag
+# lifts nothing — the ask stays, which is the safe side of a gap.
+
+name = "run0"
+effect = "exec"
+trust = "generated"
+privilege = true
+family = { bundling = false }
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+  { names = ["-u", "--user"], arity = 1 },
+  { names = ["-g", "--group"], arity = 1 },
+  { names = ["-D", "--chdir"], arity = 1, role = "dir", chdir = true },
+  { names = ["--nice"], arity = 1 },
+  { names = ["--setenv"], arity = 1 },
+  { names = ["--unit"], arity = 1 },
+  { names = ["--property"], arity = 1 },
+  { names = ["--description"], arity = 1 },
+  { names = ["--slice"], arity = 1 },
+  { names = ["--slice-inherit"] },
+  { names = ["--background"], arity = 1 },
+  { names = ["--machine"], arity = 1 },
+  { names = ["--no-ask-password"] },
+]

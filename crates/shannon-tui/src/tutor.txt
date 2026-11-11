@@ -1,0 +1,824 @@
+================================================================================
+=                 Welcome to Shannon Tutor - Version {VERSION}                 =
+================================================================================
+
+Move with `h` `j` `k` `l`, and leave at any time by typing  `:q`  then
+`<ENTER>`.
+
+        ^         To move the cursor, press `h`,`j`,`k`,`l` to move as indicated
+       `k`           `h`,`l`: moves the cursor left and right
+    <`h` `l`>        `k`,`j`: moves the cursor up and down
+       `j`
+        v         Hint: arrow keys also work
+
+Shannon is an Agent harness created for developers. Our goal is to create a
+system in which the agent works *with* you, rather than *for* you. You can let
+the agent do as much or as little as you like. The goal is to make working with
+agents easier, safer, and help you find the important bits of information in a
+haystack of prose and output.
+
+This tutor is to help you get started. *You don't need API tokens or a
+subscription*, you can explore most of Shannon's features for free. To begin we
+won't be using a real agent, saving you tokens while you learn how to use
+Shannon: the "agent" here is a stub, a mock model that costs nothing. You can
+change the model at any time by typing `:models` and selecting one, but this
+isn't necessary.
+
+The current file is an editable copy. Edit this text as much as you like;
+nothing you do in the tutor is saved, and anything the agent does starts in a
+directory made for the tutor, not in yours.
+
+Each section has relevant help files with more information on the topic. You can
+access them by typing `:help <topic>`. A topic can be a named topic, a key
+command, or a setting. For example: `:help :q`. If you know your vim commands
+`<C-]>` and `<C-t>` work as you'd expect.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    Lesson 1.0: BASIC MOVEMENT AND COMMANDS
+
+Shannon's movements are inspired by the popular editor vim. Despite all the
+memes, these movement keys allow you to quickly move through the
+conversation(s), and importantly, edit your own prompts. vim's commands have a
+grammar, so it reduces what you need to learn. The basic version is
+`[action][movement]`. So if you learn an action key and a movement key you can
+freely combine them. Motions don't need actions, but an action needs a motion.
+Here's a few to try to combine
+
+        Motions:
+            `w`       move forward a word
+            `b`       move backwards a word
+            `e`       move to the end of the word
+            `gg`      move to the top of the page
+            `G`       move to the bottom of the page
+        Actions:
+            `d`       delete
+            `c`       change
+            `y`       yank (copy)
+
+You can also use the mouse to scroll the window. But don't worry, if you're
+terminally terminal and want to laugh when others try to use your computer,
+you can turn the mouse off with  `mouse = false`  under `[tui]` in your config
+(Lesson 3.4). You can do the same with the arrow keys (`arrows = false` under
+`[tui]`).
+
+Fun fact: vim commands (mostly motions) are so prolific you'll find that these
+keys work on random programs. Try it and you'll be surprised. Use vim or Shannon
+long enough and you'll learn this by accident!
+
+If you don't want to edit with vim keys you can always edit text in `$EDITOR`
+with `<C-x><C-e>`. So just like `bash` (`zsh` needs some setup) or `<C-g>` in
+Claude Code.
+
+Each lesson ends with its help files. Type `:help motions` to open one, and
+`:q` to come back.
+
+Help files:
+- |motions|
+- |operators|
+- |text-objects|
+- |editor|
+- |mouse|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        Lesson 1.1: MOVING BETWEEN PANES
+
+You've probably noticed that Shannon has multiple panes. If you didn't, well,
+what you're looking at is called a pane. You should see two of them, the top one
+saying "tutor" (where you're reading this) and the bottom saying `prompt →
+<id>`. The bottom, or "prompt pane" tells you what it is aiming at. That is,
+where your prompt will go. You can also click on these sections to move between
+them, but that requires you lifting your hands from the keyboard and we're
+civilized people. So of course, there's a way to do this without having to shave
+your beard.
+
+Move between panes: `<C-w>w`
+    Note: `<C-?>` means `CTRL+?` We will be using this notation throughout the
+    document and the help files.
+
+You can also use your movement keys (`h`,`j`,`k`,`l`) to move. So try `<C-w>j`
+and `<C-w>k`. Think "Control window" and then you're pointing where to. 
+
+I wonder what happens when you use the capital movement keys with `<C-w>`...
+
+Help files:
+- |chat|
+- |panes|
+- |window-focus|
+- |prompt-target|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                          Lesson 1.2: EXITING SHANNON
+
+!! **NOTE**: Do not follow along, unless you want to quit Shannon:
+
+            1. Hit the `<ESC>` key and check that the status bar says [NORMAL]
+
+            2. Type: `:q` <ENTER>
+               If you hit a warning, just yell at it: `:q!` <ENTER>
+
+`:q` closes the window you're in, the way vim's does (on a page like this one,
+it gives the window back to whatever it covered).
+
+If you didn't read before following the commands then you can always return by
+typing `shannon tutor`. But you probably didn't read this, so... good luck ^__^
+
+Hint: use `:qa` to quit all and `:qa!` to force quit.
+
+Help files:
+- |quit|
+- |quitting|
+- |commands|
+- |keymap|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                       Lesson 1.3: NORMAL & INSERT MODES
+
+Like vim we offer a few modes. The two most important ones to know about are
+normal and insert. You'll know what mode you are in by looking at the bottom
+left of your screen. Right now it should read [NORMAL], telling you you're in
+normal mode. It'll look like this
+
+   [NORMAL] tutor · …
+
+Like vim you'll start in normal mode (you can change this). This is the source
+of all the memes, and *if you don't read the instructions, you'll be confused*.
+It is an unfortunate problem that has plagued humanity since the dawn of time,
+with no known solution. But don't fret, we tell you the commands as soon as you
+start `shannon`, just like vim. All you've got to do is read ;)
+
+If you press `i` then you'll enter insert mode, changing the status line to
+
+   [INSERT] tutor · …
+
+If you find yourself in the "random text generator" mode, look at the bottom
+left. If you find yourself in insert mode you'll need to return to normal mode
+to quit or run commands. To do this, just press `<ESC>`.
+
+Hint: `<C-[>` is `<ESC>` on unix machines, and is (usually) easier to reach than
+`<ESC>`. You can still remap capslock (via OS) if you really want.
+
+You'll find yourself reflexively hitting `<ESC>`. If things are acting funky,
+just hit `<ESC>` and you'll find yourself in normal mode. This highlights one of
+the problems we face in Claude Code (which has a "vim" mode): there, `<ESC>` can
+cancel you out of what you were doing. In Shannon, `<ESC>` never cancels your
+prompt or approves anything: on a tool call it answers nothing, and on a yes/no
+question it answers the safe way. Your reflexes won't betray you.
+
+Here are some other ways to go from normal mode to insert mode that you'll
+likely find yourself using. Give them a try:
+
+        Enter insert mode with:
+            `i`       at the cursor
+            `I`       at the beginning of the line
+            `a`       after the cursor
+            `A`       at the end of the line
+            `o`       on the line below the cursor
+            `O`       on the line above the cursor
+
+Move to the line marked ---> and make it match the line below it. `A` is a
+good start. Yes, you can edit this page, nothing will save
+
+---> There is some text missing from th
+     There is some text missing from this line
+
+Help files:
+- |modes|
+- |visual|
+- |insert|
+- |settings|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   Lesson 1.4: DELETING, YANKING, AND UNDOING
+
+Your prompt is a real editor, and so is this page. The main delete action is
+performed with the `d` key, which can be combined with any motion. In vim and
+Shannon we don't copy, we "yank", so we use the `y` key. We can also paste with
+`p`.
+
+Note: yanking will copy the contents to the system's clipboard, allowing you to
+paste outside of Shannon. Deletes do not go to the system clipboard. If you
+don't want yanks to go to the clipboard set `copy_on_yank = false` under
+`[tui]`.
+
+        Cut and paste:
+            `d<motion>`
+            `y<motion>`
+
+        Standalone commands
+            `x`       delete the character under the cursor
+            `dd`      delete the whole line
+            `u`       undo
+            `<C-r>`   redo
+            `p`       put back what you deleted (or yanked) after the cursor
+
+---> The the cat sat sat no the matt.
+     The cat sat on the mat.
+
+Fix the ---> line with `x`, `dw`, and `xp`. Then undo it all with `u`, and bring
+it back with `<C-r>`. Mistakes are cheap here.
+
+Hint: while in insert mode press `<C-w>`
+
+Help files:
+- |operators|
+- |register|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   Lesson 2.0: TELLING THE AGENT TO DO STUFF
+
+Oh right, you probably want to instruct Claude. What's the point of a fancy TUI
+if you can't talk to your agent?
+
+Well... you kinda already know how to do this now! There's really only one thing
+you need to know: in insert mode, pressing `<CR>` (the `<ENTER>` key, "carriage
+return") starts a new line; *it doesn't send your message*. To send, go back to
+normal mode (`<ESC>`) and press `<CR>`. It's that simple! Or if you want to stay
+in insert mode then just press `<C-CR>` (`CTRL+<ENTER>`).
+
+But you need an agent to talk to and you probably don't want to exit the
+tutorial yet. Have no fear! We've got you covered!
+
+Help files:
+- |submit|
+- |chat|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               Lesson 2.1: LAYOUT
+
+So the layout might be confusing, here's a helpful diagram and an included
+spoiler!
+```
+                                     ┌────────────────────┬── Pane Number
+   Conversation ID ─────┬────────────│───────┐            │    │
+                │       ▼            ▼       ▼            ▼    │
+                │  ┌─ <id-1> ────────1─┐┌─ <id-2> ────────2─┐  │
+                │  │                   ││                   │  │
+                │  │                   ││                   │  │
+                │  │     YOUR CHAT     ││     YOUR CHAT     │  │
+                │  │        HERE       ││        HERE       │  │
+                │  │                   ││                   │  │
+                │  │                   ││                   │  │
+                │  └───────────────────┘└───────────────────┘  │
+                └─────────────────┐                       ┌────┘
+                                  ▼                       ▼
+                   ┌─ prompt → <id-1> ────────────────────3─┐
+                   │            YOUR PROMPT HERE            │
+                   └────────────────────────────────────────┘
+```
+
+Your screen probably doesn't look exactly like this, but don't worry, it will in
+just a minute. We have multiple panes, separating what's important. The default
+layout is that the conversation sits on top and the prompt pane sits on the
+bottom.
+
+At the top left of each pane is the name of that pane, the conversation ID. It
+opens as a hash but you can always use `:rename <NAME>` to make it more
+meaningful. The prompt always aims at the last chat pane your cursor was focused
+on. So just move your cursor to the chat you want (using `<C-w>` or clicking) to
+interact with and then back to the prompt pane. Since it could be unclear, the
+prompt pane tells you where it is "aiming" (`prompt → <id>`), so you know where
+your messages go: with two chats on screen, or when the one it sends to is
+hidden. You can always send a prompt to a pane, even if it isn't focused, with
+`:Send <id>`, where the `<id>` is the conversation ID. Don't worry, we support
+tab completion.
+
+At the top right you'll see the pane number, one for each pane in the tab. This
+will help you navigate and keep track of where you are. For a shorter `:Send`
+just use the pane number rather than the conversation ID.
+
+If you want to send the same chat to all panes you can use the command
+`:Send all`.
+
+Help files:
+- |chat|
+- |windows|
+- |window-focus|
+- |prompt-target|
+- |Send|
+- |names|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                           Lesson 2.2: SPLITS & CHATS
+
+Now let's actually make your screen look like the diagram above. If your cursor
+is not already in this pane, move it here. You don't have to... but I'm just
+going to assume you did. So have it your way. Make sure you're in normal mode
+(`<C-[>`) then press:
+
+  1. `:vsp<CR>`        This splits the pane (the new one opens on the left)
+  2. `:new<CR>`        Creates a new chat in it
+  3. `<C-w>j`          Moves your cursor down into the prompt pane
+  4. `i`               Enter insert mode
+  5. Hello World       Or whatever text you want
+  6. `<ESC> <CR>`      Back to normal mode, and send it to the "agent"
+
+Okay... that's not a real agent. You see how it says "stub" down there at the
+bottom? That's a dummy agent that just acts like a real one so we can play
+around with the TUI.
+
+If you want to talk to a real agent try typing `:models` first and you'll get
+a selector. Don't worry about that yet but change it if you want to.
+
+Play around with some splits. You can even split the prompt pane. Split
+horizontally with `:sp`. Cycle through windows with `<C-w>w` or use different
+directional keys. You can also jump to any numbered pane with `N<C-w>w`.
+
+At this point your screen should look something like this:
+
+```
+                        ┌─ abc123 ───1─┐┌─ tutor ────2─┐
+                        │              ││              │
+                        │  Chat Pane   ││  Tutor Pane  │
+                        │              ││              │
+                        └──────────────┘└──────────────┘
+                        ┌─ prompt ───────────────────3─┐
+                        │         Prompt Pane          │
+                        └──────────────────────────────┘
+```
+
+Now move the focus to the tutor pane and then type `:only`. This will give you
+the layout you had before splitting. Alternatively, with your cursor on the
+chat, use the command `:hide`. (But your chat didn't go away! More on
+this later)
+
+Hint: if you split on the prompt pane you'll get two prompt panes. They are
+independent of one another, which is a convenient way to talk to multiple agents
+at once.
+
+Help files:
+- |window-split|
+- |split|
+- |window-where|
+- |window-session|
+- |only|
+- |hide|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                             Lesson 2.3: TOOL CALLS
+
+One of the core changes in Shannon is how tool calls work. Most harnesses give
+you an ugly looking, difficult to read command. That is less of "do you approve
+this" and more "trust me bro". Or more accurately "ain't nobody reading that!".
+This creates a safety risk, teaching people to just approve commands. In this
+tutorial we've been encouraging you to read, but just giving you only a wall of
+text and expecting you to read it is unrealistic. Communication is a two-way
+street and the speaker needs to make themselves interpretable.
+
+In Claude Code you might get something like:
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ Bash command                                                               │
+│ Build, sort, and summarize a small CSV in scratchpad                       │
+│╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌│
+│ mkdir -p permtest && awk 'BEGIN { for (i = 1; i <= 5; i++) printf "%d,%d,i │
+│ tem-%02d\n", i, i*i, i }' > permtest/data.csv && sort -t, -k2 -n -r permte │
+│ st/data.csv | awk -F, '{ sum += $2; printf "%-8s %4d running=%d\n", $3, $2 │
+│ , sum }' | tee permtest/report.txt | wc -l && echo "---" && sed 's/item-/I │
+│ TEM_/' permtest/report.txt | tr '[:lower:]' '[:upper:]' | head -n 3        │
+│╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌│
+│ Do you want to proceed?                                                    │
+│ ❯ 1. Yes                                                                   │
+│   2. Yes, and don't ask again for: mkdir *                                 │
+│   3. No                                                                    │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    Is this command safe?
+    Do you know what it does?
+    How long does it take you to parse?
+
+While we've been poking fun at people who don't read we recognize exhaustion is
+real, especially when working with agents. We'd reject a PR with this
+obfuscation, so we won't allow that in Shannon. That is one of the main goals of
+Shannon, making the agent communicate better. If it is hard to read or find
+information then we can't blame you for not considering it. At the end of the
+day you still have to read, but we'll try to make it as easy as possible.
+
+Unlike most harnesses, we pretty print the command and provide syntax
+highlighting, making it easier to read. We don't rely on the agent for this
+either. They don't know and we won't expect them to. Squishing everything onto
+one line is nothing short of code obfuscation, and we're not having any of that!
+*We want you to read it, so we make it readable!* Simple as that. Besides, it'd
+be incredibly irresponsible to expect you to read obfuscated code and then hold
+you accountable for its results, so let's not *needlessly* obfuscate ¯\_(ツ)_/¯.
+
+To preview this, we can ask the stub to run the command. This will actually run
+the command, but in a safe location (not the directory you opened this tutor
+in). Follow these instructions to run it. There's a fenced block and we need to
+paste the whole thing to get the stub to run it (`:help stub` for more info).
+
+  0. If you closed the chat then do `:vnew` and then `<C-w>p`
+  1. Place your cursor on the ```tool bash line below 
+  2. type  `V2jy`
+            | ||_ yank
+            | |__ move down 2
+            |____ visual mode (see `:help visual`)
+  3. `<C-w>j` into the prompt, and `p` to put them there
+  4. `<CR>` to send (make sure you're aimed at your chat)
+
+```tool bash
+mkdir -p permtest && awk 'BEGIN { for (i = 1; i <= 5; i++) printf "%d,%d,item-%02d\n", i, i*i, i }' > permtest/data.csv && sort -t, -k2 -n -r permtest/data.csv | awk -F, '{ sum += $2; printf "%-8s %4d running=%d\n", $3, $2, sum }' | tee permtest/report.txt | wc -l && echo "---" && sed 's/item-/ITEM_/' permtest/report.txt | tr '[:lower:]' '[:upper:]' | head -n 3
+```
+
+You should get a new pane that looks something like this
+
+{DECISION}
+
+The decision pane is titled "run this?" and lays it out for you. It does NOT
+take your cursor, you have to navigate there yourself. This is to prevent you
+from accidentally accepting or denying commands while you're just typing things
+out. (Also, pressing `<ESC>` in the tool pane doesn't have behavior unique to
+that pane, so you won't accidentally cancel tool calls...) If more than one tool
+call happens these get queued. Whatever you were typing stays where you typed
+it. You can navigate there or jump to it with `:decide`. Shannon has a rule:
+don't automatically teleport your cursor. If it was irresponsible to hold you
+accountable for approving obfuscated commands then it would be unconscionable to
+make it easy to accidentally approve them. That would be a major safety risk...
+
+You can scroll the decision pane with `j` and `k`: below the command, each stage
+says why it asks. If you don't like the highlighting, you can change your theme
+(`:themes`). By default we use your terminal's.
+
+But we won't stop there. You'll notice there are some other options in our
+tool calls:
+
+    `d`       deny: the agent is told, and re-plans
+    `a`       allow it, once
+    `A`       always: writes a rule for you to read and edit first
+    `e`       edit the command in your `$EDITOR`, then decide again
+
+Sometimes an Agent makes a mistake or is looking in the wrong place. You could
+deny the prompt, tell the Agent what to do, and burn those tokens and derail
+the context, OR you could just edit the command and the agent will execute the
+new command while also being aware of what was actually done! This allows the
+agent to actually work *with* you.
+
+Go ahead and answer it. Allowing it is safe here: it runs in the tutor's own
+directory. And Shannon has no "auto mode" that answers for you; what it has
+are rules you write (`:help rules`), and `A` starts one for you. For
+added fun, run the command again and this time edit it. This will open the
+command in your `$EDITOR`, just like `<C-x><C-e>`.
+
+Help files:
+- |decision|
+- |decide|
+- |analyze|
+- |rules|
+- |stub|
+- |themes|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   Lesson 2.4: BUFFERS, TABS, & PANES! OH MY!
+
+We _could_ build an entire new terminal just to interface with agents, but
+where's the fun in that? Most modern terminals can split up a window and create
+tabs, so it would be silly of us not to do that. Hell, vim has had split
+windows since 1994 (Vim 3.0) and tabs since 2006 (Vim 7.0)! So clearly this is
+some very advanced futuristic technology.
+
+We'll go one step further! BUFFERS! While vim is a good inspiration that doesn't
+mean Emacs has no good ideas. Like Emacs, in Shannon everything is a buffer.
+Whatever that means...
+
+Type `:ls` and you'll see your chats, each a buffer. (Pages like this one are
+buffers too: `:ls!` shows everything you've read.) It can take over this window;
+`:q` gives this page back. You can select these with `<CR>`, but let's not for
+now. Instead, let's put our cursor back on the tutorial page (over here!) and
+then type `:on`. This keeps only the window you're in (you'll notice the prompt
+pane stays). But we want to send something to that now hidden chat. We can do
+that with the `:Send` command! Just type into the prompt pane, go back to
+[NORMAL] mode and send your message with one of these. You can send to one of
+the numbers at the top right of a pane (not useful now ;) or any other way to
+address a chat. Try these (with N being a number that you know and I don't. I'm
+just a static document after all)
+
+        `:Send N`         Sends to pane N
+        `:Send bN`        Sends to buffer N
+        `:Send <id>`      Sends to the conversation with that id
+
+Let's create some more buffers, so run `:new` and send a message, a few times.
+(A chat that's still empty is reused rather than doubled, so say something in
+each.) You'll notice these each get a new ID, and that `:new` set this page
+aside. It's still here: type `:ls` to see. So come back to this page, type
+`:on`, and then `:tab ball` for "tab, buffers all". That'll open each of your
+buffers in a new tab.
+
+A tab is a space where you can individually control the layout of panes.
+Have one agent per tab or many. Organize how you please, or don't.
+
+        Tab Navigation:
+            `gt`/`gT`               Move to the next/previous tab
+            `:tabm N`               Move the tab to the (N+1)th position
+            `:tabm -`/`:tabm +`     Move the tab left/right
+            `:tabo`                 Close all other tabs
+
+Help files:
+- |buffers|
+- |tabs|
+- |ls|
+- |Send|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                   Lesson 2.5: RESUMING / CONVERSATION GRAPH
+
+At the core of a harness is something very simple: a graph. A conversation with
+an agent can be thought of as a graph, with each message being a node. As we
+talk back and forth this graph gets built. Even subagents work that way.
+
+A conversation graph looks like this, two turns, forked, and a turn on the
+branch, with the inspector beside it:
+
+┌ graph ─────────────────────────────1─┐┌ inspect ─────────────────────────2─┐
+│  ● tour e946fb37  (root)             ││Message                             │
+│  ╰● 39f303f1  What does main.rs do?  ││  session  5904e40f                 │
+│   │ you: What does main.rs do?       ││     turn  2/3                      │
+│   │ reply: It reads the flags and st…││     role  user                     │
+│▶  ├● 5904e40f  (HEAD, clone ← 39f303…││    index  0                        │
+│   │ ● 678954fc  And the loop?        ││   length  13 chars · ~3 tok        │
+│   │ │ you: And the loop?             ││                                    │
+│   │ ● fed571cd  Explain the loop aga…││And the loop?                       │
+│   ● 678954fc  And the loop?  ⋯       ││~                                   │
+└──────────────────────────────────────┘└────────────────────────────────────┘
+
+Here you can not only resume any conversation, but you can go back to any turn.
+We won't make you guess at a one line summary, you can directly look at each
+message so that you know exactly where you're going. We even include a little
+inspector so you can see the metadata about the conversation too!
+
+If you resume from the conversation's history (i.e. not the latest message) we
+will automatically branch the conversation for you. You can even edit the
+conversations if you want (this breaks the prompt cache from the edited turn
+on). Be a revisionist if you want, we won't tell.
+
+To open the conversation graph use the commands:
+
+    `:graph`        Open the conversation graph
+    `:resume`       Same as `:graph` but can take an ID to open that instead
+    `:description`  Add a description for your conversation
+
+You can also run `shannon --resume` from your command line to start Shannon in
+this view. You may also start any conversation with `shannon --resume <id>`.
+The IDs might be hard to remember, so I suggest using `:rename` to make it
+something sane.
+
+You can also quickly open any conversation with `:open <id>`. It'll even tab
+complete!
+
+Help files:
+- |graph|
+- |graph-nav|
+- |graph-inspector|
+- |branch|
+- |names|
+- |open|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                          Lesson 3.0: ADVANCED FEATURES
+
+If you're just an average user you probably won't need this section. But if you
+were average you probably wouldn't be using Shannon, so here we are...
+
+Shannon includes advanced features, made so that you can better work with your
+agent. The philosophy behind Shannon is that of ... someone who develops terminal
+programs: have it your way. We can't build a program for everyone, but we can
+make something reasonably close and let you modify it into what works best for
+you! Thus, we have a config!
+
+Help files:
+- |intro|
+- |config|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                         Lesson 3.1: ADVANCED MOVEMENTS
+
+Vim keybindings you say? Yes, there's actually more than `h`,`j`,`k`,`l`
+in here. We wanted to make the experience natural for any vim user. Not for
+your average vim user, but the kind who is frustrated with how frequently they
+close a browser window when they were just trying to delete the previous word.
+
+But vim was made for editing files, not conversations. While the vim experience
+is not complete, we also wanted to *extend* the movements for reading agent
+conversations. So we included new jumps, marks, and even folds to help you make
+sense of that info dump your favorite LLM left you. Shannon might even be so
+kind as to leave a mark for you which you can jump to!
+
+        Jump to the:
+            `gg` / `G`        top/bottom of the conversation
+            `<N>G`            line N
+            `]]` / `[[`       beginning of the next / previous turn
+            `][` / `[]`       end of the next / previous turn
+            `w` / `b` / `e`   next word / previous word / end of the word
+            `0` / `^` / `$`   start / first non-blank / end of the line
+            `f<c>` / `F<c>`   the next / previous <c> on the line
+            `t<c>` / `T<c>`   `f` but stop just before it
+            `;` / `,`         that find again / the other way
+            `}` / `{`         next / previous paragraph
+            `%`               the bracket that matches this one
+            `H` / `M` / `L`   top / middle / bottom of the window
+
+For most commands we support vim's grammar, so you can preface with numbers.
+So see what you said 3 turns ago with `3[[`. Stop scrolling and just go where
+you want. No more blaming Claude Code for teleporting you to some random part
+of a conversation, you can do that yourself!
+
+        Searching is part of navigating:
+            `/<text>`       Search forward
+            `?<text>`       Search backwards
+            `*`             Search word under cursor
+            `n` / `N`       Move to next / previous search result
+
+So go ahead and get button mashing. Let me know what esoteric incantations I've
+missed that you can't live without.
+
+Help files:
+- |motions|
+- |search|
+- |chat|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                              Lesson 3.2: MARKING
+
+Jumping through is great, but sometimes we can't do this systematically. So why
+can't you make your own jump points? Well good news everybody! You can! You mark
+with `m` and then you have 26 labels to choose from (a-z). A mark is a place in
+a chat: the turn, the block, and the column you were on.
+
+        `m<a-z>`        Mark this place
+        `'<a-z>`        Jump to your mark
+        backtick <a-z>  Jump to the agent's mark
+        `:marks`        See all marks
+
+You're not the only one that can mark things, the agent can too. It will try to
+intelligently place them in places it deems important and thinks you'll miss.
+This is helpful for long and more complex discussions. You can ask it to mark
+differently if you want and you should tell it so that it fits the needs for
+your conversation. (The agent's marks need Shannon's own API backend: a Claude
+Code session has no way to make them.)
+
+Help files:
+- |marks|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                              Lesson 3.3: FOLDING
+
+Conversations can get long, complicated, and full of stuff that is hard to tell
+if it is signal or noise. We've given you the ability to jump, but now we need
+the ability to filter. We need to do this dynamically since you don't know when
+you want to see those things or not. Do you need to read every thinking block?
+Every tool call? Or just one? That's a decision for you, not me.
+All folding operations start with a "z", which looks like a piece of paper being
+folded.
+
+        `zo` / `zO`   Open a fold / and every fold inside it
+        `zc` / `zC`   Close a fold (on a reply or your message, `zc` makes one)
+        `za` / `zA`   Open a closed fold, or close an open one
+        `zR` / `zM`   Open every fold / close every fold
+
+You can also set settings to fold automatically. Thinking and tool calls start
+folded; replies and your messages have no fold until you make one. In your
+config:
+
+```toml
+[tui.fold]
+# each one: "shut", "open", "manual" (no fold until zc makes one),
+# or { shut_over = N } (shut when it holds more than N lines)
+thinking = "shut"
+tool = "shut"
+reply = "manual"
+message = "manual"
+```
+
+Or try one now: `:set tui.fold.tool=open` opens every tool call at once. See
+`:help folds` for the rest.
+
+Help files:
+- |folds|
+- |tui.fold|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                             Lesson 3.4: THE CONFIG
+
+Spend as much or as little time as you want here. If there's something you can't
+configure, you can yell at us over on GitHub. Please include enough detail so we
+can actually understand you.
+
+Like every good terminal program, you can customize.
+
+There are 2 main configs that you have access to. There's a user config,
+`$XDG_CONFIG_HOME/shannon/config.toml` (most likely
+`~/.config/shannon/config.toml`). It is a toml file where you can save
+settings, which will be seen by *every* Shannon session. So use this for things
+like your theme (`:themes`), some rules (`:rules`), or anything else you want
+in every session. There's also a project config, `.shannon/config.toml` in the
+directory where you start Shannon. It's only read once you trust that directory
+(`:trust .`), since a repository you cloned could have written it.
+
+      `$XDG_CONFIG_HOME/shannon/config.toml`    User config
+         (`~/.config/shannon/config.toml`)
+      `.shannon/config.toml`                    Project config
+
+(This tutor reads neither. Like vimtutor, it runs on the defaults, so these
+lessons describe the Shannon you get.)
+
+Config building is hard, so we try to make it easy.
+
+      `:config edit`        Edit your user config in `$EDITOR`, checked on save
+      `:reload`             Read your config files again, and apply them
+      `:config save`        Save this session's `:set`s to the project config
+      `:set <opt>=<value>`  Change a setting now (`:set all` lists them)
+      `:source <file>`      Load a config from an arbitrary location
+      `:unsource <file>`    Unsource that config, you didn't want it anyways
+
+Help files:
+- |config|
+- |config-file|
+- |config-project|
+- |set|
+- |source|
+- |options|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    Lesson 3.5: KEEP IT SECRET, KEEP IT SAFE
+
+Agents can often handle a lot of sensitive data. Perhaps you don't want that
+data being read by the upstream LLM provider. Alternatively, your API keys are
+not useful training data, so save the tokens and help your provider out.
+Whatever your motivations, we got you covered.
+
+Agents aren't malicious, but they are eager optimizers who will act haphazardly
+with your secrets. They know what API keys and tokens look like, and if it is in
+their context they'll be eager to use them. Luckily agents have been trained on
+lots of code, so they understand a wild concept that school children and even
+adults struggle with: algebra. We provide two ways to use variables, secrets
+and aliases:
+
+        `:secret <text>`              Make <text> a secret
+        `:secret --no-spend <text>`   ...that no command may use
+        `:nosecret <text>`            It's not a secret anymore
+        `:secrets`                    Show your secrets and aliases
+
+While in chat you will be able to see your secret in clear text, but your agent
+won't. Here's the trick, your agent will be able to *use* the secret
+without ever knowing its contents. Instead it'll see a handle like
+`{{secret.1a2b}}`. You can go hunter2 my hunter2-ing hunter2 and all your agent
+will see is "You can go {{secret.1a2b}} my {{secret.1a2b}}-ing
+{{secret.1a2b}}". So talk abstractly to your agent and don't let it know your
+secrets. Or do!
+
+An alias is the same trick for text that isn't secret, just long: an [[alias]]
+in your config, which the agent writes as `{{a:repo}}`.
+
+Help files:
+- |secrets|
+- |alias|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        Lesson 3.6: GRAPHS GRAPHS GRAPHS
+
+Previously we mentioned the conversation graph, but treated it as if you'd use
+it to resume conversations. While that's useful, we can do a lot more here.
+Think of the conversation graph similar to `git`. Each session is an
+append-only log that grows with the conversation, recording everything. Each
+turn is a node in this graph, so let's actually treat this thing like a graph!
+
+We give you full access to manipulating the conversation graph. You want to
+branch? You got it! You want to squash and merge? You can do that too! You want
+to edit the previous turns in a conversation and convince your agent it said
+things it would never say? Well you better check the TOS, but we ain't going to
+tell. Why would you want to do any of this? Frankly, I'm not sure. But you can!
+And that's a good enough reason for me.
+
+            `:fork`     Clone this chat into a new pane, sharing its history
+            `:vfork`    But vertically!
+
+To branch from a past turn instead, go to it in `:graph` and press `<CR>`.
+
+You can also do much more from the graph page. But note that these are not well
+tested. Feel free to suggest or contribute new methods!
+
+            `:clone <ID>`               Make a copy of a session
+            `:merge <ID>`               Merge a branch back into its session
+            `:squash`                   Replace the marked turns with a summary
+            `:distill`                  Ask the model for that summary
+            `:compact`                  Compact the conversation
+            `:compact <instructions>`   Compact with instructions
+            `:compact --keep N`         Keeps the last N turns
+
+You can also select multiple nodes, search (`/`), or do a lot more. This is the
+backbone of Shannon. Key bindings are inspired by vim's netrw (yes, vim has a
+native file explorer, you don't need to install NerdTree). See more with
+`:help graph-keys`.
+
+Help files:
+- |fork|
+- |compact|
+- |graph-keys|
+- |graph-ops|
+- |graph-workflows|
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                               THAT'S THE TOUR
+
+That's everything for now. The manual is one `:help` away, and `:help <topic>`
+takes you straight to a topic. When you're ready for a real agent, leave with
+`:qa` and start `shannon`. If you've never set one up, `shannon setup` walks
+you through it.

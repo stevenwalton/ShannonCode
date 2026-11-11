@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 2ef1fffdeaad0382c9d64c18c4bc4abf276ef7af8e2f67a55de3e4d50c6cb434 # shrinks to a = ([], TurnConfig { model: "", max_tokens: None }), b = ([], TurnConfig { model: "", max_tokens: Some(0) })

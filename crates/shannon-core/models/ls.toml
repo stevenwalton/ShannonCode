@@ -1,0 +1,39 @@
+# ls — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "ls"
+effect = "read"
+trust = "generated"
+# Lists: names and metadata, never what a file holds (`list`, 10-11).
+reads_here = "list"
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "list" }]
+flag = [
+  { names = ["-a", "--all"] },
+  { names = ["-l"], canon = "long" },
+  { names = ["-h", "--human-readable"], canon = "human" },
+  { names = ["-R", "--recursive"] },
+  { names = ["-1"], canon = "one-per-line" },
+  { names = ["-A", "--almost-all"] },
+  { names = ["-t"], canon = "sort-time" },
+  { names = ["-r", "--reverse"] },
+  { names = ["-S"], canon = "sort-size" },
+  { names = ["-F", "--classify"] },
+  { names = ["-d", "--directory"] },
+  { names = ["-i", "--inode"] },
+  { names = ["-s", "--size"] },
+  { names = ["-p"], canon = "slash" },
+  { names = ["-c"], canon = "ctime" },
+  { names = ["-u"], canon = "atime" },
+  { names = ["-L", "--dereference"] },
+  { names = ["-o"], canon = "long-no-group" },
+  { names = ["-g"], canon = "long-no-owner" },
+  { names = ["-n", "--numeric-uid-gid"], canon = "numeric" },
+  { names = ["-G"], canon = "color-or-no-group" },
+  { names = ["-T"], canon = "full-time" },
+  { names = ["-C"], canon = "columns" },
+  { names = ["-x"], canon = "across" },
+  { names = ["-m"], canon = "commas" },
+  { names = ["-k"], canon = "kibibytes" },
+  { names = ["-f"], canon = "unsorted" },
+]

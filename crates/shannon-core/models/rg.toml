@@ -1,0 +1,97 @@
+# rg (ripgrep) — a read of the trees it searches, where it runs when none
+# is named. Three flags run a program: `--pre` (a preprocessor), `-z` (the
+# decompressors on PATH), `--hostname-bin`. An include glob (`-g`,
+# `--iglob`) overrides what rg skips — hidden and ignored files: `.env`,
+# keys — so its value is guarded unless it begins with `!`, an exclude; a
+# type (`-t`) overrides the same filters and is guarded by name, as are
+# `--hidden`, `-u`, `--no-ignore` and `-L`, which open the same files.
+# `--type-not` and `-E`/`--exclude` only narrow, and stay reads.
+#
+# Canonical names are the registry's (`shell::program`, 2026-10); every
+# spelling it knew is here. `--type=rust` attaches with `=`; `-A 3` and
+# `-A3` both read. Reproduced on ripgrep 15.2 (review of fa4159f,
+# Reviewer B).
+
+name = "rg"
+effect = "read"
+trust = "verified"
+reads_here = true
+family = { bundling = true, interspersed = true }
+unknown_flag_why = "it carries a flag left unmodelled — among them --hidden, -u, --no-ignore… and -L, which read what rg skips: `.env`, keys"
+examples.match = [
+  "rg --line-number 'fn main' src",
+  "rg -n -i foo --type=rust --glob='!target/**' .",
+  "rg --count-matches 'TODO|FIXME' --no-heading --with-filename .",
+  "rg -e 'a' -e 'b' f",
+]
+examples.not_match = ["rg --frob foo"]
+
+positional = [
+  { at = 0, role = "pattern", unless = ["regexp", "file", "files", "type-list"] },
+  { at = "rest", role = "read_file" },
+]
+
+flag = [
+  # Runs other programs.
+  { names = ["--pre"], arity = 1, role = "program", effect = "exec" },
+  { names = ["-z", "--search-zip"], effect = "exec" },
+  { names = ["--hostname-bin"], arity = 1, role = "program", effect = "exec" },
+  # What it matches.
+  { names = ["-e", "--regexp"], arity = 1, role = "pattern" },
+  { names = ["-f", "--file"], arity = 1, role = "read_file" },
+  { names = ["-F", "--fixed-strings"] }, { names = ["-i", "--ignore-case"] }, { names = ["-S", "--smart-case"] },
+  { names = ["-s", "--case-sensitive"] }, { names = ["-v", "--invert-match"] }, { names = ["-w", "--word-regexp"] },
+  { names = ["-x", "--line-regexp"] }, { names = ["-U", "--multiline"] }, { names = ["--multiline-dotall"] },
+  { names = ["-P", "--pcre2"] }, { names = ["--engine"], arity = 1, role = "enum" }, { names = ["--crlf"] },
+  { names = ["--null-data"] }, { names = ["-E", "--encoding"], arity = 1, role = "data" },
+  { names = ["-a", "--text"] }, { names = ["--binary"] }, { names = ["--no-unicode"] },
+  { names = ["-m", "--max-count"], arity = 1, role = "number" },
+  # Which files. An exclude only narrows; an include glob or a type
+  # overrides the hidden and ignore filters.
+  { names = ["-g", "--glob"], arity = 1, role = "include_glob", why = "an include glob (-g) overrides what rg skips — hidden and ignored files: `.env`, keys; a `!` exclude only narrows the search" },
+  { names = ["--iglob"], arity = 1, role = "include_glob", why = "an include glob (--iglob) overrides what rg skips — hidden and ignored files: `.env`, keys; a `!` exclude only narrows the search" },
+  { names = ["--glob-case-insensitive"] },
+  { names = ["-t", "--type"], arity = 1, role = "enum", benign = false, why = "a type (-t) overrides what rg skips — hidden and ignored files: `.env`, keys" },
+  { names = ["-T", "--type-not"], arity = 1, role = "enum" },
+  { names = ["--type-add"], arity = 1, role = "data" },
+  { names = ["--type-clear"], arity = 1, role = "data" },
+  { names = ["--type-list"] },
+  { names = ["-d", "--max-depth"], arity = 1, role = "number" },
+  { names = ["--max-filesize"], arity = 1, role = "data" },
+  { names = ["--one-file-system"] },
+  { names = ["--ignore-file"], arity = 1, role = "read_file" },
+  { names = ["--no-config"] },
+  { names = ["--files"] },
+  # What opens the skipped files up: guarded by name. `--no-ignore-vcs`
+  # alone reads what `.gitignore` hides — `.env` is the usual entry.
+  { names = ["--hidden", "-."], canon = "hidden", benign = false, why = "--hidden reads what rg skips: `.env`, keys" },
+  { names = ["--no-ignore"], benign = false, why = "--no-ignore reads what rg skips: ignored files" },
+  { names = ["--no-ignore-vcs"], benign = false, why = "--no-ignore-vcs reads what .gitignore hides: `.env`, keys" },
+  { names = ["--no-ignore-parent"], benign = false, why = "--no-ignore-parent reads what a parent's ignore file hides" },
+  { names = ["--no-ignore-dot"], benign = false, why = "--no-ignore-dot reads what .ignore hides" },
+  { names = ["--no-ignore-global"], benign = false, why = "--no-ignore-global reads what the global ignore file hides" },
+  { names = ["-u", "--unrestricted"], benign = false, why = "-u reads what rg skips: hidden and ignored files, then binaries" },
+  { names = ["-L", "--follow"], benign = false, why = "-L follows links out of the tree" },
+  # What it prints.
+  { names = ["-r", "--replace"], arity = 1, role = "data" },
+  { names = ["-c", "--count"] }, { names = ["--count-matches"] },
+  { names = ["-l", "--files-with-matches"] }, { names = ["--files-without-match"] },
+  { names = ["-o", "--only-matching"] }, { names = ["-q", "--quiet"] },
+  { names = ["-n", "--line-number"] }, { names = ["-N", "--no-line-number"] },
+  { names = ["--column"] }, { names = ["-b", "--byte-offset"] },
+  { names = ["-H", "--with-filename"] }, { names = ["-I", "--no-filename"] },
+  { names = ["--heading"] }, { names = ["--no-heading"] },
+  { names = ["-A", "--after-context"], arity = 1, role = "number" },
+  { names = ["-B", "--before-context"], arity = 1, role = "number" },
+  { names = ["-C", "--context"], arity = 1, role = "number" },
+  { names = ["--context-separator"], arity = 1, role = "data" },
+  { names = ["--passthru"] }, { names = ["--vimgrep"] }, { names = ["--json"] },
+  { names = ["-0", "--null"] }, { names = ["--trim"] }, { names = ["-p", "--pretty"] },
+  { names = ["--color", "--colour"], canon = "color", arity = 1, role = "enum" },
+  { names = ["-M", "--max-columns"], arity = 1, role = "number" },
+  { names = ["--max-columns-preview"] },
+  { names = ["--sort"], arity = 1, role = "enum" }, { names = ["--sortr"], arity = 1, role = "enum" },
+  { names = ["--stats"] }, { names = ["--no-messages"] },
+  { names = ["-j", "--threads"], arity = 1, role = "number" },
+  { names = ["--line-buffered"] }, { names = ["--block-buffered"] }, { names = ["--include-zero"] },
+]

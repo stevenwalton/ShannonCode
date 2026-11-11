@@ -1,0 +1,54 @@
+# Rosé Pine Dawn — github.com/rose-pine/palette (MIT); see NOTICE.md. The
+# palette's sixteen terminal colours and its ground: every role the shipped
+# `terminal` theme paints is drawn in them. A light theme: the roles the
+# shipped theme paints white are its text. Its bright slots repeat its
+# colours, and its six accents are spoken for — pine, gold and love are the
+# verdict, iris a withheld value — so the decision pane's expansions take
+# its subtle grey, and its numbers and constants its rose.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.text" = "text"
+"ui.statusline" = "text"
+"ui.text.quiet" = "subtle"
+"ui.muted" = "subtle"
+"ui.border" = "subtle"
+"decision.operator" = "subtle"
+"decision.function.call" = { fg = "text", bold = true }
+"decision.variable.special" = "subtle"
+"decision.tag" = "subtle"
+"decision.number" = "rose"
+"decision.constant" = "rose"
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "foam", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#faf4ed"
+text = "#575279"
+comment = "#9893a5"
+subtle = "#797593"
+surface = "#dfdad9"
+rose = "#d7827e"
+foam = "#56949f"
+black = "#f2e9e1"
+red = "#b4637a"
+green = "#286983"
+yellow = "#ea9d34"
+blue = "#56949f"
+magenta = "#907aa9"
+cyan = "#d7827e"
+white = "#575279"
+bright-black = "#9893a5"
+bright-red = "#b4637a"
+bright-green = "#286983"
+bright-yellow = "#ea9d34"
+bright-blue = "#56949f"
+bright-magenta = "#907aa9"
+bright-cyan = "#d7827e"
+bright-white = "#575279"

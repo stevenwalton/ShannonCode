@@ -1,0 +1,13 @@
+# seq — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "seq"
+effect = "read"
+trust = "generated"
+family = { bundling = true }
+positional = [{ at = "rest", role = "data" }]
+flag = [
+  { names = ["-f", "--format"], arity = 1 },
+  { names = ["-s", "--separator"], arity = 1 },
+  { names = ["-w", "--equal-width"] },
+]

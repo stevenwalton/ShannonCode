@@ -1,0 +1,36 @@
+# Catppuccin Macchiato — github.com/catppuccin/palette (MIT); see NOTICE.md.
+# The palette's sixteen terminal colours and its ground: every role the
+# shipped `terminal` theme paints is drawn in them.
+inherits = "terminal"
+"ui.background" = { fg = "text", bg = "base" }
+comment = { fg = "comment", italic = true }
+"ui.menu.selected" = { fg = "base", bg = "text" }
+"ui.bar" = { fg = "base", bg = "cyan", bold = true }
+"ui.bar.waiting" = { fg = "base", bg = "yellow", bold = true }
+"ui.danger.sign" = { fg = "base", bg = "red", bold = true }
+"ui.caution.fill" = { fg = "base", bg = "yellow" }
+"ui.danger.fill" = { fg = "base", bg = "red", bold = true }
+"ui.graph.mark" = { bg = "surface" }
+"ui.graph.shared" = { fg = "comment", italic = true }
+
+[palette]
+base = "#24273a"
+text = "#cad3f5"
+comment = "#939ab7"
+surface = "#494d64"
+black = "#494d64"
+red = "#ed8796"
+green = "#a6da95"
+yellow = "#eed49f"
+blue = "#8aadf4"
+magenta = "#f5bde6"
+cyan = "#8bd5ca"
+white = "#a5adcb"
+bright-black = "#5b6078"
+bright-red = "#ec7486"
+bright-green = "#8ccf7f"
+bright-yellow = "#e1c682"
+bright-blue = "#78a1f6"
+bright-magenta = "#f2a9dd"
+bright-cyan = "#63cbc0"
+bright-white = "#b8c0e0"

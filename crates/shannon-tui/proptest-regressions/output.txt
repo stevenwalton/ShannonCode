@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc d365ae165ad147a1da79dee834f550b20fcfd4dcbe95c25e20d60b63eba2eaa4 # shrinks to ops = [Begin, Record, Record, End, Begin, Begin, Chunk("\n "), Begin, End, Begin, Place(134195019721468307, 0), Record, End]
+cc e0eb59f38a502efc3c9f459da3f19edda05d844898170cf2733c01607b2e9a48 # shrinks to ops = [End, Chunk("a"), Record, Begin, Begin, Place(4511665128276843249, 0), Chunk("")]

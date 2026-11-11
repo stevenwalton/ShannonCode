@@ -1,0 +1,23 @@
+# timeout — runs the command line after its duration, and ends it when the
+# time is up. The operands past the duration are another command line
+# (`argv`), read as its own act; timeout itself does nothing else.
+
+name = "timeout"
+effect = "exec"
+trust = "verified"
+family = { bundling = true, interspersed = false }
+examples.match = ["timeout 300 python3 tools/drive/smoke.py", "timeout -s KILL 5 sleep 10"]
+examples.not_match = ["timeout --frob 5 ls"]
+
+positional = [
+  { at = 0, role = "number" },
+  { at = "rest", role = "argv" },
+]
+
+flag = [
+  { names = ["-s", "--signal"], canon = "signal", arity = 1, role = "data" },
+  { names = ["-k", "--kill-after"], canon = "kill-after", arity = 1, role = "data" },
+  { names = ["--foreground"] },
+  { names = ["--preserve-status"] },
+  { names = ["-v", "--verbose"], canon = "verbose" },
+]

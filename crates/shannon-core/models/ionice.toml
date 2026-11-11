@@ -1,0 +1,10 @@
+# ionice — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "ionice"
+effect = "exec"
+trust = "generated"
+family = { bundling = true }
+positional = [{ at = "rest", role = "argv" }]
+flag = [
+]

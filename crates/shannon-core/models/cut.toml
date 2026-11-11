@@ -1,0 +1,18 @@
+# cut — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "cut"
+effect = "read"
+trust = "generated"
+family = { bundling = true, long_abbrev = true }
+positional = [{ at = "rest", role = "read_file" }]
+flag = [
+  { names = ["-d", "--delimiter"], arity = 1 },
+  { names = ["-f", "--fields"], arity = 1 },
+  { names = ["-c", "--characters"], arity = 1 },
+  { names = ["-b", "--bytes"], arity = 1 },
+  { names = ["-s", "--only-delimited"] },
+  { names = ["--complement"] },
+  { names = ["--output-delimiter"], arity = 1 },
+  { names = ["-z", "--zero-terminated"] },
+]

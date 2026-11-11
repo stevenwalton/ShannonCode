@@ -1,0 +1,54 @@
+# sed — a read of the files it is given, printing what the script says;
+# the script is the whole danger (`w` writes, `r` reads a file no argument
+# names, `e` and `s///e` run the pattern space), and `-i` edits the files in
+# place. The script is read by the sed language reader
+# (`permission::model::lang::sed`); the model only says WHICH word it is.
+#
+# BSD sed, as on this machine: `-i` TAKES an argument (`sed -i '' …`), and
+# options come before the script. GNU sed's `-i[SUFFIX]` attaches, and it
+# permutes options; a `gnu` model is a later file (§9.10, identity).
+
+name = "sed"
+effect = "read"
+trust = "verified"
+implementation = "bsd"
+language = "sed"
+# Interspersed: a dashed word after the script is read as a flag, as GNU
+# sed reads it — `sed -n 1p -i a.rs` edits in place. BSD sed reads it as a
+# file, which this reading only asks about more; read as a file it was a
+# false allow. The safe reading until the implementation is verified (P6c).
+family = { bundling = true, long_abbrev = true, interspersed = true }
+switch = [
+  { when = "i", from = "read_file", to = "write_file" },
+  { when = "I", from = "read_file", to = "write_file" },
+]
+examples.match = [
+  "sed -n 1,60p crates/a.rs",
+  "sed -n '$p' a.rs",
+  "sed 's/foo/bar/' a.rs",
+  "sed -i '' 's/foo/bar/' src/main.rs",
+  "sed -e 's/a/b/' -e 's/c/d/' f",
+]
+examples.not_match = ["sed --in-place 's/a/b/' f"]
+
+positional = [
+  { at = 0, role = "code", unless = ["e", "f"] },
+  { at = "rest", role = "read_file" },
+]
+
+flag = [
+  { names = ["-n"] },
+  { names = ["-E", "-r"], canon = "E" },
+  { names = ["-a"] },
+  { names = ["-l"] },
+  { names = ["-u"] },
+  { names = ["-e"], arity = 1, role = "code" },
+  # The script, from a file: code no reader sees (`w`, `r`, `e` in it), run
+  # as a script is (`bash x.sh`) — it was a read, and ran unasked (10-13).
+  { names = ["-f"], arity = 1, role = "exec_file" },
+  # In-place: the files it reads become files it writes (the switch above),
+  # and the backup suffix is this flag's own argument — BSD's reading; GNU
+  # attaches it (`-i.bak`, or none), so both are read (`or_attached`).
+  { names = ["-i"], arity = 1, role = "data", effect = "write", or_attached = true },
+  { names = ["-I"], arity = 1, role = "data", effect = "write" },
+]

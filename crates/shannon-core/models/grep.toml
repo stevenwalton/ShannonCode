@@ -1,0 +1,49 @@
+# grep — generated from the registry `shell::program::PROGRAMS` (P1 of the
+# rebuild, 2026-10-09); a seed, to be verified and extended by hand.
+
+name = "grep"
+effect = "read"
+trust = "generated"
+unknown_flag_why = "it carries a flag left unmodelled — among them -r, a recursive read that prints files no argument names"
+family = { bundling = true, long_abbrev = true, numeric_option = "context" }
+positional = [{ at = 0, role = "pattern", unless = ["regexp", "file"] }, { at = "rest", role = "read_file" }]
+flag = [
+  { names = ["-e", "--regexp"], arity = 1 },
+  { names = ["-f", "--file"], arity = 1, role = "read_file" },
+  { names = ["-i", "-y", "--ignore-case"] },
+  { names = ["--no-ignore-case"] },
+  { names = ["-v", "--invert-match"] },
+  { names = ["-w", "--word-regexp"] },
+  { names = ["-x", "--line-regexp"] },
+  { names = ["-E", "--extended-regexp"] },
+  { names = ["-F", "--fixed-strings"] },
+  { names = ["-G", "--basic-regexp"] },
+  { names = ["-P", "--perl-regexp"] },
+  { names = ["-c", "--count"] },
+  { names = ["-l", "--files-with-matches"] },
+  { names = ["-L", "--files-without-match"] },
+  { names = ["-o", "--only-matching"] },
+  { names = ["-q", "--quiet", "--silent"] },
+  { names = ["-s", "--no-messages"] },
+  { names = ["-n", "--line-number"] },
+  { names = ["-b", "--byte-offset"] },
+  { names = ["-H", "--with-filename"] },
+  { names = ["-h", "--no-filename"] },
+  { names = ["-a", "--text"] },
+  { names = ["-I"], canon = "binary-without-match" },
+  { names = ["-Z", "--null"] },
+  { names = ["-z", "--null-data"] },
+  { names = ["-T", "--initial-tab"] },
+  { names = ["--line-buffered"] },
+  { names = ["--color", "--colour"] },
+  { names = ["-A", "--after-context"], arity = 1 },
+  { names = ["-B", "--before-context"], arity = 1 },
+  { names = ["-C", "--context"], arity = 1 },
+  { names = ["-m", "--max-count"], arity = 1 },
+  { names = ["--label"], arity = 1 },
+  { names = ["--binary-files"], arity = 1 },
+  { names = ["--include"], arity = 1 },
+  { names = ["--exclude"], arity = 1 },
+  { names = ["--exclude-dir"], arity = 1 },
+  { names = ["--exclude-from"], arity = 1, role = "read_file" },
+]

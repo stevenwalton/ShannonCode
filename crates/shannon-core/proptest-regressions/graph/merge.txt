@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc a292e0a1499810029f4fa6e3609491b306f27f361fb8bdbe33f141026ea71ee0 # shrinks to base_tags = [(0, 0)], other_tags = [], (branch_at, branch_tag) = (Index(0), (3, 0)), steps = [Authored((3, 1))]
